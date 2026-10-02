@@ -174,7 +174,19 @@ module.exports = (_env, argv) => {
   // placeholders" and names neither react-dom nor `shared`. Vendor splitting is
   // unaffected. `webpack --json`, looking for a chunk with an empty `files` array,
   // is how you confirm it.
-  optimization: { splitChunks: { cacheGroups: { default: false } } },
+  //
+  // `nodeEnv: 'production'` in EVERY mode, the dev server included. `react` is
+  // shared, so at runtime it is the host's PRODUCTION React — but
+  // `react/jsx-runtime` is not shared and gets bundled. Under `--mode development`
+  // that is React's development JSX runtime, which calls `dispatcher.getOwner()`
+  // on the host's production internals: the page loads, then dies on first render
+  // with "dispatcher.getOwner is not a function". Forcing production library
+  // branches keeps the bundled runtime matched to the host's React. Your own code
+  // is still built in development mode, with source maps.
+  optimization: {
+    nodeEnv: 'production',
+    splitChunks: { cacheGroups: { default: false } },
+  },
 
   resolve: { extensions: ['.tsx', '.ts', '.js', '.jsx'] },
   module: {
@@ -251,7 +263,22 @@ module.exports = (_env, argv) => {
   // `*` is fine for local dev. In production the CDN must return
   // Access-Control-Allow-Origin covering the portal origin — CORS is probed when
   // a version is submitted, and a bundle that fails the probe cannot be verified.
-  devServer: { port: <dev-port>, headers: { 'Access-Control-Allow-Origin': '*' } },
+  devServer: {
+    port: <dev-port>,
+    headers: { 'Access-Control-Allow-Origin': '*' },
+    // REQUIRED to load the dev server from Horizon. webpack-dev-server ≥5.2
+    // answers a cross-site <script> load (Sec-Fetch-Site: cross-site +
+    // Sec-Fetch-Mode: no-cors) with 403 "Cross-Origin request blocked" unless
+    // the Host is explicitly allowed — and that is exactly how Horizon fetches a
+    // dev remote. The CORS header above does not help: the guard runs first.
+    // List only `localhost` (not 'all') so the DNS-rebinding Host check still
+    // holds for every other name.
+    allowedHosts: ['localhost'],
+    // The live-reload client otherwise dials the PAGE's host
+    // (wss://<horizon-host>:<dev-port>/ws), which is not where this server runs,
+    // and fails on every reconnect.
+    client: { webSocketURL: 'ws://localhost:<dev-port>/ws' },
+  },
   };
 };
 ```
@@ -587,7 +614,7 @@ Serves `remoteEntry.js` from `http://localhost:<dev-port>/remoteEntry.js`.
 
 Use **Platform → UI SDK Management → Registered Apps → Add App** in the host UI, or the API:
 
-    curl -X POST "https://your-horizon.example.com/ns-api/v2/ui-extensions" \
+    curl -X POST "https://your-horizon.example.com/ns-api/v2/ui-extensions/registry" \
       -H "Authorization: Bearer YOUR_TOKEN" \
       -H "Content-Type: application/json" \
       -d '{
@@ -604,16 +631,37 @@ The app `id` is derived server-side as the kebab-case of `webpack_module` (so `<
 
 There is deliberately **no `permissions` or `capabilities` field**. The platform analyser extracts what your bundle declares (`requiredPermissions` on your extension configs) from the submitted source; the Capabilities column in Registered Apps is a read-only view of that. Capabilities are enabled or disabled **platform-wide** by an administrator, not per app.
 
-Your origin must be in the operator's **approved CDN origins** allowlist or the bundle is refused before it is fetched. It is an allowlist of bare hostnames or single-label wildcards (`cdn.example.com`, `*.example.com`) and defaults to _nothing approved_; `localhost` and `127.0.0.1` are seeded so local dev works. Failure is silent in the UI — check the console for `[HorizonAppsLoader]` errors.
+Your origin must be in the operator's **approved CDN origins** allowlist or the bundle is refused before it is fetched. It is an allowlist of bare hostnames or single-label wildcards (`cdn.example.com`, `*.example.com`) and defaults to _nothing approved_. `localhost` and `127.0.0.1` are seeded, but that alone does not make a local bundle load — see **Local development** below. Failure is silent in the UI — check the console for `[HorizonAppsLoader]` errors.
 
-**Registration alone does not make the app load.** A newly registered app sits at verification status `none` and renders nowhere. Submit a version:
+**Registration alone does not make the app load.** A newly registered app sits at verification status `none` and renders nowhere. Deploy a version — the platform fetches the bundle itself, verifies it, and promotes it:
 
-    curl -X POST "https://your-horizon.example.com/ns-api/v2/ui-extensions/<app-id>/versions" \
+    curl -X POST "https://your-horizon.example.com/ns-api/v2/ui-extensions/registry/<app-id>/deploy" \
       -H "Authorization: Bearer YOUR_TOKEN" \
       -H "Content-Type: application/json" \
-      -d '{ "version": "1.0.0", "remote_entry_url": "https://cdn.example.com/remoteEntry.js" }'
+      -d '{ "remote_entry_url": "https://cdn.example.com/remoteEntry.js", "synchronous": "yes" }'
 
-Never send an `integrity_hash` — the platform computes it from the bytes it fetched, and the field is no longer accepted. The response carries `status` (`approved` / `flagged` / `rejected`), `has_chunk_sri`, `promoted`, and `report.findings[]`. **`approved` and `flagged` both load**; `rejected`, `pending` and `none` do not. A `409` means that version was already submitted — not an error.
+`version` is optional: omitted, the patch component advances; supplied, it must be **greater** than the current one. Never send an `integrity_hash` — the platform computes it from the bytes it fetched, and the field is no longer accepted. The response carries `status` (`approved` / `flagged` / `rejected` / `dev` / `unchanged`), `has_chunk_sri`, `promoted`, and `report.findings[]`. **`approved` and `flagged` both load**; `rejected`, `pending` and `none` do not. A `409` means two deploys raced for the same version — retry. Deploys are rate-limited to 10 per minute per app.
+
+## Local development
+
+You can run the app on your own machine and have Horizon load it straight from `localhost`, with no scan and no publishing — then it's just code and refresh. This needs Horizon (Flow) **46.0.0-staging.320** or newer and NS API v2 **46.0.0-alpha.598** or newer.
+
+1.  **Switch it on once per dev server.** A Super User adds an **API config** (not a UI config) under **Platform › API › API configs › Add API config**: name `NsUISDKDevRemotes`, value type boolean, value `true`, target your API server(s). It is for development servers, so it is not in the populated list.
+2.  **Run `npm run dev`** and check that `http://localhost:<dev-port>/remoteEntry.js` opens in your browser. The `devServer` block in `webpack.config.js` (`allowedHosts`, `client.webSocketURL`) and `optimization.nodeEnv` are what make this work inside Horizon — keep them.
+3.  **Register and deploy with the localhost URL.** Registering (above) with `remote_entry_url: http://localhost:<dev-port>/remoteEntry.js` is not enough by itself: the registration stays at `none`. Deploy it, with that same URL:
+
+        curl -X POST "https://your-horizon.example.com/ns-api/v2/ui-extensions/registry/<app-id>/deploy" \
+          -H "Authorization: Bearer YOUR_TOKEN" \
+          -H "Content-Type: application/json" \
+          -d '{ "remote_entry_url": "http://localhost:<dev-port>/remoteEntry.js", "synchronous": "yes" }'
+
+    It answers `"status": "dev"` with no findings, and **Registered Apps** shows it as a **Development build**. (Without the API config, the same call is `rejected` with `fetch-failed: host resolves to a private, reserved or link-local address` — the platform's own fetch refuses localhost.)
+
+4.  **Reload Horizon.** Chrome asks whether the site may access devices on your local network — allow it, or the bundle cannot be fetched.
+
+A development build is fetched by **each viewer's own browser from its own `localhost`**, so it only renders for someone running the dev server on that machine; everyone else gets a console load error. Development builds load only from `localhost` / `127.0.0.1` URLs. When you are done, deploy a real build from your CDN URL, which runs the full verification.
+
+If the app is listed but does not render, the console tells you which piece is missing: a `403` on `remoteEntry.js` is the dev server's cross-site guard (`allowedHosts`); "dispatcher.getOwner is not a function" is the development JSX runtime (`optimization.nodeEnv`); repeated `wss://<horizon-host>:<dev-port>/ws` failures are the live-reload socket (`client.webSocketURL`).
 
 ## Build for production
 
@@ -1224,11 +1272,15 @@ Before you ship:
 
   `verify` runs the same bundle checks the platform runs. Registering the app
   is not enough on its own — it stays at verification status `none` and will
-  not render until you submit a version and it is verified. The README has the
-  submission call.
+  not render until you deploy a version and it is verified. The README has the
+  deploy call.
 
-  Your CDN origin (and `localhost` for dev) must be in the operator's approved
-  CDN origins list, or the bundle is refused before it is fetched.
+  Your CDN origin must be in the operator's approved CDN origins list, or the
+  bundle is refused before it is fetched.
+
+To develop against a live Horizon without publishing, see "Local development"
+in the README: it needs the `NsUISDKDevRemotes` API config on the server, then
+a deploy of the localhost URL.
 
 If you had to work around a missing UI component, it is written up in
 KIT-GAPS.md — please send that file to the Horizon SDK team. It is how the
