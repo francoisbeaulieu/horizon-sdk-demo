@@ -274,10 +274,12 @@ module.exports = (_env, argv) => {
     // List only `localhost` (not 'all') so the DNS-rebinding Host check still
     // holds for every other name.
     allowedHosts: ['localhost'],
-    // The live-reload client otherwise dials the PAGE's host
-    // (wss://<horizon-host>:<dev-port>/ws), which is not where this server runs,
-    // and fails on every reconnect.
-    client: { webSocketURL: 'ws://localhost:<dev-port>/ws' },
+    // No live-reload client. Inside Horizon its socket comes from the portal's
+    // origin, which the Host/Origin check above refuses ("Invalid Host/Origin
+    // header"), so it floods the console with reconnect errors. Pointing it at
+    // localhost (`client.webSocketURL`) does not help. Reload the page by hand.
+    client: false,
+    webSocketServer: false,
   },
   };
 };
@@ -377,7 +379,13 @@ export default function App(horizonContext: HorizonContext) {
     sdk.registerDynamicExtension({
       id: '<app-id>.header-button',
       zone: 'page-header-actions',
-      routes: [{ pattern: '/manage/:domain/users' }],
+      // Admins above the domain reach this page under /manage/<domain>/…; the
+      // domain's own Office/Site Manager gets /home/domain/… (no :domain — use
+      // `user.domain`). List both or those managers never see the button.
+      routes: [
+        { pattern: '/manage/:domain/users' },
+        { pattern: '/home/domain/users' },
+      ],
       priority: 10,
       requiredScopes: 'DOMAIN_MANAGERS',
       actions: [
@@ -647,7 +655,7 @@ Your origin must be in the operator's **approved CDN origins** allowlist or the 
 You can run the app on your own machine and have Horizon load it straight from `localhost`, with no scan and no publishing — then it's just code and refresh. This needs Horizon (Flow) **46.0.0-staging.320** or newer and NS API v2 **46.0.0-alpha.598** or newer.
 
 1.  **Switch it on once per dev server.** A Super User adds an **API config** (not a UI config) under **Platform › API › API configs › Add API config**: name `NsUISDKDevRemotes`, value type boolean, value `true`, target your API server(s). It is for development servers, so it is not in the populated list.
-2.  **Run `npm run dev`** and check that `http://localhost:<dev-port>/remoteEntry.js` opens in your browser. The `devServer` block in `webpack.config.js` (`allowedHosts`, `client.webSocketURL`) and `optimization.nodeEnv` are what make this work inside Horizon — keep them.
+2.  **Run `npm run dev`** and check that `http://localhost:<dev-port>/remoteEntry.js` opens in your browser. The `devServer` block in `webpack.config.js` (`allowedHosts`, `client: false`) and `optimization.nodeEnv` are what make this work inside Horizon — keep them.
 3.  **Register and deploy with the localhost URL.** Registering (above) with `remote_entry_url: http://localhost:<dev-port>/remoteEntry.js` is not enough by itself: the registration stays at `none`. Deploy it, with that same URL:
 
         curl -X POST "https://your-horizon.example.com/ns-api/v2/ui-extensions/registry/<app-id>/deploy" \
@@ -661,7 +669,7 @@ You can run the app on your own machine and have Horizon load it straight from `
 
 A development build is fetched by **each viewer's own browser from its own `localhost`**, so it only renders for someone running the dev server on that machine; everyone else gets a console load error. Development builds load only from `localhost` / `127.0.0.1` URLs. When you are done, deploy a real build from your CDN URL, which runs the full verification.
 
-If the app is listed but does not render, the console tells you which piece is missing: a `403` on `remoteEntry.js` is the dev server's cross-site guard (`allowedHosts`); "dispatcher.getOwner is not a function" is the development JSX runtime (`optimization.nodeEnv`); repeated `wss://<horizon-host>:<dev-port>/ws` failures are the live-reload socket (`client.webSocketURL`).
+If the app is listed but does not render, the console tells you which piece is missing: a `403` on `remoteEntry.js` is the dev server's cross-site guard (`allowedHosts`); "dispatcher.getOwner is not a function" is the development JSX runtime (`optimization.nodeEnv`); repeated "Invalid Host/Origin header" or `/ws` reconnect errors are the live-reload client (`client: false`). After a masquerade, Horizon does not reload remote apps: reload the page before testing as the masqueraded user.
 
 ## Build for production
 
@@ -1306,6 +1314,10 @@ host UI kit finds out what it is missing.
 - **Streams are capability-gated.** For any stream the app subscribes to, add its `<streamId>:listen` capability to the registration `permissions` (e.g. `call-events:listen`); a platform admin enables it per app. Without the grant, the subscription is silently dropped.
 - **The event bus is per-app scoped.** Use `eventBus` only for the app's _own_ custom events (intra-app coordination — your page ↔ your extensions), namespaced with the appId prefix; the host confines them to your app and blocks cross-app/host-channel access. Don't subscribe to `theme:changed` / `locale:changed` directly — use `useTheme()` / `useLocale()`.
 - Don't import from `@netsapiens/horizon-sdk/client` or `/ui` — only the root entry exists.
+- **Domain pages have two route shapes.** Admins above the domain get `/manage/:domain/<page>`; the domain's own Office/Site Manager gets `/home/domain/<page>`, with no `:domain` param (read `user.domain`). Register both patterns, or domain managers never see the extension.
+- **`locale` is not a BCP 47 tag.** Horizon sends forms like `enUS`; `localeCompare`/`Intl.*` throw `RangeError: Invalid language tag`. Map it to a valid tag (e.g. `fr*` → `'fr'`, else `'en'`) before any locale-sensitive call.
+- **`form-section-*` zones only get what the host form passes.** The zone's `pageContext` is `{ formType, mode, entityId, formData }`, and `formData` is whatever that form hands to `FormPanel` — some host forms pass none (the Add/Edit site form gets `formData: undefined`). Zones cannot write the host form or see its submit. Log `pageContext` on the target form before designing around it.
+- **Host pickers cache their lists.** Horizon's autocomplete fields read cached lists (dial plans: `staleTime` 3 h). An object your app creates through the API is not offered in host forms until the page is reloaded — tell the user, or offer a reload.
 - **`IconButton` is shorthand-only.** Pass the Iconify icon name via the `icon` prop (and optionally `iconSize`). Do NOT use the MUI children pattern — children are not supported and the button will render at 0×0. Correct: `<IconButton icon="mdi:account" iconSize={18} size="small" onClick={...} aria-label="..." />`. Wrong: `<IconButton><Icon icon="mdi:account" /></IconButton>`. The SDK type contract enforces this at compile time. Every other themed component (`Button`, `Stack`, `Paper`, etc.) follows standard MUI children patterns.
 - **`Select` takes an `options` prop, not `MenuItem` children.** The host kit does not expose `MenuItem`. Use `<Select label="…" value={v} onChange={(e) => set(e.target.value)} options={[{ value, label }]} />`. Building it with `MenuItem` children yields an empty dropdown.
 - **Contribute action-zone buttons with `actions`, not `component`.** Declaring
