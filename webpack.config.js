@@ -42,6 +42,17 @@ module.exports = (_env, argv) => {
       crossOriginLoading: 'anonymous',
       clean: true,
     },
+    // ⚠️ PRODUCTION REACT RUNTIME IN EVERY BUILD, dev included.
+    //
+    // React is a shared singleton, and the host supplies its PRODUCTION build.
+    // A dev build would otherwise bundle react/jsx-runtime's development variant,
+    // which calls dev-only internals on React (`dispatcher.getOwner`) that the
+    // host's React does not have — App throws on first render, registers
+    // nothing, and the host reports "loaded but registered nothing" with every
+    // route a 404. nodeEnv picks the production variant of every dependency.
+    optimization: {
+      nodeEnv: 'production',
+    },
     resolve: {
       extensions: ['.tsx', '.ts', '.js', '.jsx'],
     },
@@ -55,7 +66,11 @@ module.exports = (_env, argv) => {
             options: {
               presets: [
                 '@babel/preset-env',
-                ['@babel/preset-react', { runtime: 'automatic' }],
+                // Production JSX even in a dev build — see `optimization.nodeEnv`.
+                [
+                  '@babel/preset-react',
+                  { runtime: 'automatic', development: false },
+                ],
                 '@babel/preset-typescript',
               ],
             },
@@ -141,6 +156,15 @@ module.exports = (_env, argv) => {
       // reading your dev bundle; 'all' lets the Flow host through. It also turns
       // off the Host-header check, so only run this server on a machine you trust.
       allowedHosts: 'all',
+      // No live-reload client in the bundle. It would run inside the HOST page
+      // and keep opening ws://localhost:5005/ws from there — noise in the host's
+      // console that looks like the app opening its own sockets (it never does;
+      // sdk.streams rides the host's socket). Reload the host page to pick up a
+      // rebuild instead.
+      hot: false,
+      liveReload: false,
+      client: false,
+      webSocketServer: false,
       headers: {
         'Access-Control-Allow-Origin': '*',
         // Chrome's Private Network Access: an HTTPS server's page (the host)
