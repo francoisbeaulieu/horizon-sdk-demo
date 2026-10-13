@@ -36,9 +36,9 @@ export const CAPABILITIES: Capability[] = [
     desc: 'Contribute cards to a host dashboard — panels on the grid, leaves inside a stat container, or a container of your own that holds them. The host draws the card, the heading and the menu; the app supplies the content.',
   },
   {
-    title: 'Call events',
-    api: 'sdk.subscribeToCallEvents()',
-    desc: 'Subscribe to the live SIP call stream through a capability-gated, app-scoped API to enrich inbound calls.',
+    title: 'Live data',
+    api: 'sdk.streams',
+    desc: 'Live calls, queues, agents, presence and more, one named method per feed. The host checks the app’s grants and the user’s scope, and reports a status you can show.',
   },
   {
     title: 'On-demand side panel',
@@ -47,12 +47,12 @@ export const CAPABILITIES: Capability[] = [
   },
   {
     title: 'Themed UI kit',
-    api: 'horizonContext.ui',
+    api: 'flowContext.ui',
     desc: 'Build with the host’s MUI Aurora components and templates so extensions match Horizon in light and dark mode.',
   },
   {
     title: 'Gated API access',
-    api: 'horizonContext.api',
+    api: 'flowContext.api',
     desc: 'Call the NetSapiens v2 API through an authenticated proxy that enforces per-capability and per-resource access.',
   },
 ];
@@ -204,7 +204,7 @@ export const WALKTHROUGH: WalkthroughItem[] = [
   },
   {
     label: 'Component Showcase',
-    desc: 'A reference page rendering every shared MUI Aurora component available via horizonContext.ui.',
+    desc: 'A reference page rendering every shared MUI Aurora component available via flowContext.ui.',
     nav: '/apps/component-showcase',
     badge: 'success',
   },
@@ -363,7 +363,7 @@ sdk.registerWidget({
 //   omitted        → nothing goes stale, so ask for nothing  (Demo app links)
 
 // Two more gates, answering different questions:
-//   requiredPermissions: ['call-events:listen']  // what the APP was granted
+//   requiredPermissions: ['streams:softphone']   // what the APP was granted
 //   condition: (context) => Boolean(context.eventBus)  // your own, run last
 
 // Your component receives { context, widget, actions }:
@@ -379,12 +379,19 @@ function RecentActivityWidget({ context, widget, actions }) {
 sdk.unregisterWidget('recent-activity');`,
   },
   {
-    title: 'Subscribe to live call events',
-    code: `// Capability-gated: declares 'call-events:subscribe'
-const unsubscribe = sdk.subscribeToCallEvents(
-  ['call-started', 'call-answered', 'call-missed', 'call-ended'],
-  (event) => enrichAndBroadcast(event),
-);`,
+    title: 'Subscribe to live data',
+    code: `// One named method per feed; the host checks the app's grant.
+const call = sdk.streams.softphone.onCallStarted((event) => enrich(event));
+
+// In a component: opens on mount, closes on unmount, returns its status.
+const status = useStream(
+  sdk,
+  (streams) => streams.queues.onDomainQueues({ stats: setStats }),
+  [],
+);
+if (status.state === 'refused') return <Alert>{status.message}</Alert>;
+
+call.unsubscribe();`,
   },
   {
     title: 'Open the side panel from anywhere',

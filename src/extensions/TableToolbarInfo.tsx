@@ -3,7 +3,7 @@
  * Zone: `table-toolbar` — the toolbar row above a DataTable. Good for
  * table-scoped actions, hints, or status chips.
  */
-import type { ExtensionComponentProps } from '@netsapiens/horizon-sdk';
+import type { ExtensionComponentProps } from '@netsapiens/flow-sdk';
 
 import { type ZoneMarkerProps } from '../integration/withZoneTestId';
 

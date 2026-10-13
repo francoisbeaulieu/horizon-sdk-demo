@@ -1,12 +1,12 @@
 /** Showcase section: Select dropdown. */
 import type { ChangeEvent } from 'react';
 import { useState } from 'react';
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
 export default function SelectSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { Select, Typography, Stack, Paper } = ui || {};
   const [selectValue, setSelectValue] = useState('option1');
   if (!Paper || !Typography || !Stack || !Select) return null;
@@ -34,7 +34,7 @@ export default function SelectSection() {
       />
 
       <SectionCode>
-        {`const { Select } = horizonContext.ui;
+        {`const { Select } = flowContext.ui;
 const [selectValue, setSelectValue] = useState('option1');
 
 <Select

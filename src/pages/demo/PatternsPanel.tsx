@@ -1,12 +1,12 @@
 /** DemoPage tab: Route Patterns — how extensions target host pages. */
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { PATTERNS } from '../../content/demoContent';
 
 const HEADINGS = ['Pattern', 'Type', 'Example match'];
 
 export default function PatternsPanel() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { Paper, Box, Typography } = ui || {};
   if (!Paper || !Box || !Typography) return null;
 

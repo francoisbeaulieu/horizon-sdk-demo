@@ -3,10 +3,10 @@
  * the host's themed Paper and adapts its background to the host light/dark theme
  * (reactive via the SDK's useTheme hook).
  */
-import { useHorizonContext, useTheme } from '@netsapiens/horizon-sdk';
+import { useFlowContext, useTheme } from '@netsapiens/flow-sdk';
 
 export function CodeBlock({ children }: { children: string }) {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { theme } = useTheme();
   const Paper = ui?.Paper;
   if (!Paper) return null;

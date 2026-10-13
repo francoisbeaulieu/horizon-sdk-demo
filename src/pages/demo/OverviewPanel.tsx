@@ -1,11 +1,11 @@
 /** DemoPage tab: Overview — what the SDK does + capability cards. */
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { CAPABILITIES } from '../../content/demoContent';
 import { accentAt } from './accents';
 
 export default function OverviewPanel() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { Paper, Stack, Box, Typography, Chip } = ui || {};
   if (!Paper || !Stack || !Box || !Typography || !Chip) return null;
 

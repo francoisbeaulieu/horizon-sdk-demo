@@ -7,7 +7,7 @@
  * is followed by the host's own translation function, resolving real host keys
  * live.
  */
-import { useHorizonContext, useLocale } from '@netsapiens/horizon-sdk';
+import { useFlowContext, useLocale } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
@@ -29,7 +29,7 @@ const KEYS: Array<{ key: string; options?: Record<string, unknown> }> = [
 ];
 
 export default function TypographySection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { Typography, Stack, Paper, Box, Chip, Divider } = ui || {};
   // Reactive: both update the moment the user switches language in the top bar,
   // with nothing to subscribe to here.
@@ -104,7 +104,7 @@ export default function TypographySection() {
       </Box>
 
       <SectionCode>
-        {`const { Typography } = horizonContext.ui;
+        {`const { Typography } = flowContext.ui;
 
 <Typography variant="h4">Heading 4</Typography>          // h4 · h5 · h6
 <Typography variant="subtitle1">Subtitle 1</Typography>  // subtitle1 · subtitle2
@@ -112,7 +112,7 @@ export default function TypographySection() {
 <Typography variant="caption" color="text.secondary">Caption</Typography>
 
 // ── Localization ───────────────────────────────────────────────────────
-import { useLocale } from '@netsapiens/horizon-sdk';
+import { useLocale } from '@netsapiens/flow-sdk';
 
 const { t, locale } = useLocale();   // both reactive; nothing to subscribe to
 

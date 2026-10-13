@@ -1,5 +1,5 @@
 /** Showcase section: Chart — line, area and bar, drawn by the host. */
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
@@ -21,7 +21,7 @@ const KINDS = [
 ];
 
 export default function ChartSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { Chart, Typography, Stack, Paper, Box, Chip } = ui || {};
   if (!Paper || !Typography || !Stack || !Chart || !Box) return null;
 
@@ -66,7 +66,7 @@ export default function ChartSection() {
       </Box>
 
       <SectionCode>
-        {`const { Chart } = horizonContext.ui;
+        {`const { Chart } = flowContext.ui;
 
 <Chart
   kind="bar"          // 'line' | 'area' | 'bar'

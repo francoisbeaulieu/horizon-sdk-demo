@@ -40,7 +40,7 @@
  * content behind its own scrollbar works against that.
  *
  * Data is pushed, not polled — `refreshPolicy: 'realtime'`. `App.tsx` subscribes
- * to the SIP stream once through `sdk.subscribeToCallEvents`,
+ * to the softphone once through `sdk.streams.softphone`,
  * `services/callEnrichment.ts` enriches each event and re-emits it, and this
  * console listens to that one broadcast. A widget does not open a second
  * subscription to the host.
@@ -53,9 +53,9 @@
 import type {
   SidePanelContentProps,
   WidgetComponentProps,
-} from '@netsapiens/horizon-sdk';
+} from '@netsapiens/flow-sdk';
 import { useEffect, useMemo, useState } from 'react';
-import { useSidePanel } from '@netsapiens/horizon-sdk';
+import { useSidePanel } from '@netsapiens/flow-sdk';
 
 import type { CallerInfo } from '../services/callEnrichment';
 import { type ZoneMarkerProps } from '../integration/withZoneTestId';
@@ -143,7 +143,7 @@ export function LiveCallsWidget({
     Icon,
   } = context.ui ?? {};
 
-  // A widget renders outside HorizonContextProvider, exactly as a zone
+  // A widget renders outside FlowContextProvider, exactly as a zone
   // extension does, so the hook is handed the bus rather than reading context.
   const { open } = useSidePanel(context.eventBus);
   const navigate = context.navigate;

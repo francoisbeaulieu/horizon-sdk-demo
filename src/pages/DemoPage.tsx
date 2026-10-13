@@ -8,13 +8,13 @@
  * This file is just the tab shell — each tab's content lives in its own panel
  * under `demo/`, and the static content lives in `content/demoContent.ts`.
  *
- * Every visible element comes from the host kit (`horizonContext.ui`), so the
+ * Every visible element comes from the host kit (`flowContext.ui`), so the
  * whole page re-themes with the host light/dark toggle — kit components read the
  * host's live MUI theme, which token objects cannot. Nothing here is painted
  * from `ui.theme` / `ui.styles`. See CLAUDE.md, "Never hand-roll UI".
  */
 import { useState } from 'react';
-import { useHorizonContext, VERSION } from '@netsapiens/horizon-sdk';
+import { useFlowContext, VERSION } from '@netsapiens/flow-sdk';
 
 import { type ZoneMarkerProps } from '../integration/withZoneTestId';
 import CodePanel from './demo/CodePanel';
@@ -43,7 +43,7 @@ const TABS: { value: TabKey; label: string }[] = [
 ];
 
 export default function DemoPage({ ...marker }: ZoneMarkerProps) {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
 
   const PageTemplate = ui?.templates?.PageTemplate;
@@ -86,7 +86,7 @@ export default function DemoPage({ ...marker }: ZoneMarkerProps) {
               Using the published SDK
             </Typography>
             <Typography variant='caption' color='text.secondary'>
-              @netsapiens/horizon-sdk@{VERSION} — loaded over Module Federation
+              @netsapiens/flow-sdk@{VERSION} — loaded over Module Federation
             </Typography>
           </Box>
         </Stack>

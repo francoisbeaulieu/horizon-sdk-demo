@@ -9,7 +9,7 @@ import type {
   ExtensionAction,
   ExtensionComponentProps,
   ScopeRequirement,
-} from '@netsapiens/horizon-sdk';
+} from '@netsapiens/flow-sdk';
 import type { ComponentType } from 'react';
 
 import type { ZoneMarkerProps } from './withZoneTestId';

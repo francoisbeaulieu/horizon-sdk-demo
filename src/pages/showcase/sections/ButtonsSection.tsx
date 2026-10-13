@@ -7,14 +7,14 @@
  * real toolbar, dialog and form footer in the platform, and a showcase that
  * shows them any other way is showing the wrong thing.
  */
-import { useHorizonContext, useLocale } from '@netsapiens/horizon-sdk';
+import { useFlowContext, useLocale } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
 const COLORS = ['primary', 'secondary', 'success', 'error'] as const;
 
 export default function ButtonsSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   // Host keys for the shared vocabulary: these follow the language switch,
   // and a string hard-coded here would be English forever.
   const { t } = useLocale();
@@ -119,7 +119,7 @@ export default function ButtonsSection() {
       </Stack>
 
       <SectionCode>
-        {`const { Button } = horizonContext.ui;
+        {`const { Button } = flowContext.ui;
 
 // variant: contained → outlined → text, in descending emphasis
 // color:   primary · secondary · success · error

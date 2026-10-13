@@ -1,11 +1,11 @@
 /** Showcase section: TextField. */
 import { useState } from 'react';
-import { useHorizonContext, useLocale } from '@netsapiens/horizon-sdk';
+import { useFlowContext, useLocale } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
 export default function TextFieldSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   // Host keys for the shared vocabulary: these follow the language switch,
   // and a string hard-coded here would be English forever.
   const { t } = useLocale();
@@ -34,7 +34,7 @@ export default function TextFieldSection() {
       </Stack>
 
       <SectionCode>
-        {`const { TextField } = horizonContext.ui;
+        {`const { TextField } = flowContext.ui;
 const [inputValue, setInputValue] = useState('');
 
 <Stack spacing={2}>

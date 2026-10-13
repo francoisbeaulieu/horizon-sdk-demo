@@ -4,7 +4,7 @@
  * Adds consent / marketing opt-in checkboxes to the contact form.
  */
 import { useEffect, useState } from 'react';
-import { type ExtensionComponentProps } from '@netsapiens/horizon-sdk';
+import { type ExtensionComponentProps } from '@netsapiens/flow-sdk';
 
 import { type ZoneMarkerProps } from '../integration/withZoneTestId';
 

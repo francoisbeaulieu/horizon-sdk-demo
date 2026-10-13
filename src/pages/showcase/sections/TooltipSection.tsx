@@ -1,10 +1,10 @@
 /** Showcase section: Tooltip. */
-import { useHorizonContext, useLocale } from '@netsapiens/horizon-sdk';
+import { useFlowContext, useLocale } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
 export default function TooltipSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   // Host keys for the shared vocabulary: these follow the language switch,
   // and a string hard-coded here would be English forever.
   const { t } = useLocale();
@@ -100,7 +100,7 @@ export default function TooltipSection() {
       </Stack>
 
       <SectionCode>
-        {`const { Tooltip, IconButton } = horizonContext.ui;
+        {`const { Tooltip, IconButton } = flowContext.ui;
 
 // The tooltip is for the POINTER. Keep the aria-label too — a screen reader
 // never sees the tooltip, and an icon button without one is unnamed.

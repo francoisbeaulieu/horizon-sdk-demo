@@ -1,6 +1,6 @@
 /**
  * Component Showcase — the visual reference for everything the host hands over
- * on `horizonContext.ui`, and the page a partner developer is pointed at first.
+ * on `flowContext.ui`, and the page a partner developer is pointed at first.
  *
  * Each component has its own self-contained section under `showcase/sections/`
  * (live demo + copy-paste snippet + a note on where the host itself uses it);
@@ -23,7 +23,7 @@
  * button.
  */
 import { useState } from 'react';
-import { useHorizonContext, useLocale } from '@netsapiens/horizon-sdk';
+import { useFlowContext, useLocale } from '@netsapiens/flow-sdk';
 
 import { type ZoneMarkerProps } from '../integration/withZoneTestId';
 import {
@@ -60,7 +60,7 @@ import {
 import { ShowCodeContext } from './showcase/ShowCode';
 
 export default function ComponentShowcasePage({ ...marker }: ZoneMarkerProps) {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { t } = useLocale();
   const { PageTemplate } = ui?.templates || {};
   const { Stack } = ui || {};

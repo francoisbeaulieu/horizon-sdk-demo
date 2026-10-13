@@ -8,7 +8,7 @@
  *  - add:  there's no contact yet, so we show recently-added Example CRM
  *    contacts for context.
  */
-import { type ExtensionComponentProps } from '@netsapiens/horizon-sdk';
+import { type ExtensionComponentProps } from '@netsapiens/flow-sdk';
 
 import type { CrmRecord } from '../mocks/crm';
 import { type ZoneMarkerProps } from '../integration/withZoneTestId';

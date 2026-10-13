@@ -3,7 +3,7 @@
  * Displays enriched caller information in the incoming call widget
  * Shows data fetched based on call events
  */
-import type { ExtensionComponentProps } from '@netsapiens/horizon-sdk';
+import type { ExtensionComponentProps } from '@netsapiens/flow-sdk';
 import { useEffect, useState } from 'react';
 
 import type { CallerInfo } from '../services/callEnrichment';

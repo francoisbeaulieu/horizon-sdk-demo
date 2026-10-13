@@ -3,7 +3,7 @@
  * Zone: `page-header-secondary` — secondary content beside the page title
  * (badges, status indicators). Renders via Horizon's PageHeader / PageTemplate.
  */
-import type { ExtensionComponentProps } from '@netsapiens/horizon-sdk';
+import type { ExtensionComponentProps } from '@netsapiens/flow-sdk';
 
 import { type ZoneMarkerProps } from '../integration/withZoneTestId';
 

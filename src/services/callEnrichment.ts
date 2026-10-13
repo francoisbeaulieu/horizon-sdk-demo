@@ -9,7 +9,7 @@
  * In production the CRM lookup would be a real API call; everything else (the
  * store + event contract) would stay the same.
  */
-import type { HorizonEventBus } from '@netsapiens/horizon-sdk';
+import type { CallEvent, FlowEventBus } from '@netsapiens/flow-sdk';
 
 import type { CrmRecord } from '../mocks/crm';
 import { lookupCrmRecord, normalizePhoneNumber } from '../mocks/crm';
@@ -71,45 +71,44 @@ export const activeCallsStore = new Map<string, CallerInfo>();
 export const CALL_UPDATED_EVENT = 'demo:call-updated';
 export const CALL_REMOVED_EVENT = 'demo:call-removed';
 
-/** The raw call event shape delivered by `sdk.subscribeToCallEvents`. */
-interface RawCallEvent {
-  type: 'call-started' | 'call-answered' | 'call-missed' | 'call-ended';
-  callId: string;
-  from: string;
-  to: string;
-  direction: 'inbound' | 'outbound';
-  timestamp: number;
-}
-
-function statusForEvent(type: RawCallEvent['type']): CallerInfo['status'] {
+function statusForEvent(type: CallEvent['type']): CallerInfo['status'] {
   if (type === 'call-answered') return 'answered';
   if (type === 'call-missed') return 'missed';
   return 'ringing';
 }
 
 /**
- * Build a call-event handler bound to the given event bus. Pass the result to
- * `sdk.subscribeToCallEvents(...)`. Updates `activeCallsStore` and emits
- * `demo:call-updated` / `demo:call-removed` for the CallerInfoWidget.
+ * Build a softphone call handler bound to the given event bus. Pass the result
+ * to the `sdk.streams.softphone` methods (see App.tsx). Updates
+ * `activeCallsStore` and emits `demo:call-updated` / `demo:call-removed` for
+ * the CallerInfoWidget.
+ *
+ * A `CallEvent` names the other party (`remote`) rather than from/to, so the
+ * direction decides which side the user's own extension was on.
  */
-export function createCallEventHandler(eventBus: HorizonEventBus) {
-  return (event: RawCallEvent) => {
+export function createCallEventHandler(
+  eventBus: FlowEventBus,
+  ownExtension = '',
+) {
+  return (event: CallEvent) => {
     if (event.type === 'call-ended') {
       activeCallsStore.delete(event.callId);
       eventBus.emit(CALL_REMOVED_EVENT, event.callId);
       return;
     }
 
-    const record = fetchCrmContact(normalizePhoneNumber(event.from));
+    const remote = event.remote.number;
+    const record = fetchCrmContact(normalizePhoneNumber(remote));
+    const inbound = event.direction === 'inbound';
 
     const enriched: CallerInfo = {
       callId: event.callId,
-      from: event.from,
-      to: event.to,
+      from: inbound ? remote : ownExtension,
+      to: inbound ? ownExtension : remote,
       direction: event.direction,
       status: statusForEvent(event.type),
-      timestamp: event.timestamp,
-      callerName: record?.name,
+      timestamp: Date.now(),
+      callerName: record?.name ?? event.remote.name,
       company: record?.company,
       lastContact: record?.lastContact,
       notes: record?.notes,

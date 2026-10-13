@@ -1,11 +1,11 @@
 /** Showcase section: SidePanel drawer + SideTrayComponents building blocks. */
 import { useState } from 'react';
-import { useHorizonContext, useLocale } from '@netsapiens/horizon-sdk';
+import { useFlowContext, useLocale } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
 export default function SidePanelSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   // Host keys for the shared vocabulary: these follow the language switch,
   // and a string hard-coded here would be English forever.
   const { t } = useLocale();
@@ -122,7 +122,7 @@ export default function SidePanelSection() {
       </SidePanel>
 
       <SectionCode>
-        {`const { SidePanel, SideTrayComponents } = horizonContext.ui.templates;
+        {`const { SidePanel, SideTrayComponents } = flowContext.ui.templates;
 const [open, setOpen] = useState(false);
 
 <Button variant="contained" onClick={() => setOpen(true)}>Open Side Panel</Button>

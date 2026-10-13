@@ -1,5 +1,5 @@
-import type { ExtensionComponentProps } from '@netsapiens/horizon-sdk';
-import { useSidePanel } from '@netsapiens/horizon-sdk';
+import type { ExtensionComponentProps } from '@netsapiens/flow-sdk';
+import { useSidePanel } from '@netsapiens/flow-sdk';
 
 import { type ZoneMarkerProps } from '../integration/withZoneTestId';
 import { QuickLinksPanel } from '../panels/QuickLinksPanel';
@@ -18,7 +18,7 @@ export function TopbarHelpButton({
   ...marker
 }: ExtensionComponentProps & ZoneMarkerProps) {
   const { Button, Icon, Tooltip } = context.ui ?? {};
-  // Pass context.eventBus: extension components render outside HorizonContextProvider.
+  // Pass context.eventBus: extension components render outside FlowContextProvider.
   const { open } = useSidePanel(context.eventBus);
 
   const handleClick = () => {

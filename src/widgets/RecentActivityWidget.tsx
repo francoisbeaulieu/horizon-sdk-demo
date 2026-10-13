@@ -28,7 +28,7 @@
  * already drive. The host implements it as a remount; `SyncQueueTable.tsx` is
  * where that earns a button.
  */
-import type { WidgetComponentProps } from '@netsapiens/horizon-sdk';
+import type { WidgetComponentProps } from '@netsapiens/flow-sdk';
 import { useMemo, useState } from 'react';
 
 import type { ActivityKind } from '../mocks/widgetActivity';

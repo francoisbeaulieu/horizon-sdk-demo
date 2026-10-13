@@ -3,7 +3,7 @@
  * Computes call statistics from the live filtered rows published by DataTable.
  * No API calls — the data is already in memory from the page's own query.
  */
-import type { ExtensionComponentProps } from '@netsapiens/horizon-sdk';
+import type { ExtensionComponentProps } from '@netsapiens/flow-sdk';
 import { useMemo } from 'react';
 
 import { type ZoneMarkerProps } from '../integration/withZoneTestId';

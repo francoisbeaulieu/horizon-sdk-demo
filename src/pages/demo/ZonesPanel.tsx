@@ -1,11 +1,11 @@
 /** DemoPage tab: Extension Zones — every zone this demo registers into. */
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { ZONES } from '../../content/demoContent';
 import { accentAt } from './accents';
 
 export default function ZonesPanel() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { Paper, Stack, Typography } = ui || {};
   if (!Paper || !Stack || !Typography) return null;
 

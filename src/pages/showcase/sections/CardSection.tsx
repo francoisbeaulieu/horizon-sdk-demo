@@ -1,5 +1,5 @@
 /** Showcase section: Card, CardContent, Divider and Icon. */
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
@@ -13,7 +13,7 @@ const CARDS = [
 ];
 
 export default function CardSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { Card, CardContent, Icon, Typography, Stack, Paper, Box } = ui || {};
   if (!Paper || !Typography || !Stack || !Card || !CardContent || !Box)
     return null;
@@ -58,7 +58,7 @@ export default function CardSection() {
       </Box>
 
       <SectionCode>
-        {`const { Card, CardContent, Icon } = horizonContext.ui;
+        {`const { Card, CardContent, Icon } = flowContext.ui;
 
 // Passing onClick makes the host render a CardActionArea internally, so the
 // focus ring, hover state and keyboard activation come for free.

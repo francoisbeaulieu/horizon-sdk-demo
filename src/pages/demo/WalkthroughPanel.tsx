@@ -1,10 +1,10 @@
 /** DemoPage tab: Walkthrough — jump to each surface in the host. */
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { WALKTHROUGH } from '../../content/demoContent';
 
 export default function WalkthroughPanel() {
-  const { ui, navigate } = useHorizonContext();
+  const { ui, navigate } = useFlowContext();
   const { Paper, Stack, Box, Typography, Button } = ui || {};
   if (!Paper || !Stack || !Box || !Typography || !Button) return null;
 

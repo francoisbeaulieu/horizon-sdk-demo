@@ -7,7 +7,7 @@ teaches, not just work.
 ## RULE 1 (MAJOR): Never hand-roll UI
 
 **Every visible element must come from the host component kit the SDK hands over
-in `horizonContext.ui` — `ui.*` components and `ui.templates.*`. No exceptions
+in `flowContext.ui` — `ui.*` components and `ui.templates.*`. No exceptions
 outside the carve-outs below.**
 
 Concretely, in `src/`:
@@ -28,7 +28,7 @@ style={...}>`, `<h2>`, `<table>`, `<pre>`. Use `Box`, `Button`, `Typography`,
     `HorizonAppsLoader`). So the host hands over correct tokens.
   - The SDK's recommended `useMemo([], …)` wrapper pattern in `App.tsx`
     **freezes the context** to keep component identity stable, so the rebuilt
-    context never reaches `HorizonContextProvider`.
+    context never reaches `FlowContextProvider`.
   - The provider therefore keeps `theme`, `locale`, `managing` and `ui` live
     from host events. `ui` arrives on `theme:changed` (`{ theme, ui }`); on a
     host too old to send it, `ui.theme`/`ui.styles` stay pinned to the mode
@@ -117,16 +117,16 @@ Then `npm run typecheck && npm run lint && npm run format && npm run build`.
 ## Repo conventions
 
 - **No direct MUI dependency.** Every component comes through
-  `horizonContext.ui`; keeping MUI out of the remote bundle is the point of that
+  `flowContext.ui`; keeping MUI out of the remote bundle is the point of that
   surface.
 - Page components destructure the kit and guard before rendering (`if (!Paper ||
 !Typography) return null`) — see `src/pages/showcase/sections/` for the house
   pattern to copy.
 - Panels inside a page read the live context themselves via
-  `useHorizonContext()`. Do not prop-drill `ui` / `theme` / `styles` down —
+  `useFlowContext()`. Do not prop-drill `ui` / `theme` / `styles` down —
   drilling is how a stale snapshot spreads.
 - The `useMemo([], …)` page wrappers in `src/App.tsx` close over
-  `horizonContext` directly, exactly as the SDK README shows. Do not add a ref
+  `flowContext` directly, exactly as the SDK README shows. Do not add a ref
   or re-read to "refresh" it — the provider keeps the live fields current from
   host events, and a workaround here would hide a regression there.
 - Static page copy lives in `src/content/`; a page file is layout only.

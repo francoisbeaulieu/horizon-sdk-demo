@@ -1,11 +1,11 @@
 /** Showcase section: Checkbox. */
 import { useState } from 'react';
-import { useHorizonContext, useLocale } from '@netsapiens/horizon-sdk';
+import { useFlowContext, useLocale } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
 export default function CheckboxSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   // Host keys for the shared vocabulary: these follow the language switch,
   // and a string hard-coded here would be English forever.
   const { t } = useLocale();
@@ -33,7 +33,7 @@ export default function CheckboxSection() {
       </Stack>
 
       <SectionCode>
-        {`const { Checkbox } = horizonContext.ui;
+        {`const { Checkbox } = flowContext.ui;
 const [checked, setChecked] = useState(true);
 
 <Stack spacing={1}>

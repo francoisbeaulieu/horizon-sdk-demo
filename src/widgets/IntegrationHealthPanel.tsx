@@ -26,7 +26,7 @@
  *
  * Its leaves are `SyncedContactsStat.tsx` and `SyncFailuresStat.tsx`.
  */
-import type { WidgetComponentProps } from '@netsapiens/horizon-sdk';
+import type { WidgetComponentProps } from '@netsapiens/flow-sdk';
 
 import { type ZoneMarkerProps } from '../integration/withZoneTestId';
 

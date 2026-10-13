@@ -6,7 +6,7 @@
  * arrives with: they already have a component library, so what does taking ours
  * buy them?
  */
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { CodeBlock } from '../../../components/CodeBlock';
 import { useShowCode } from '../ShowCode';
@@ -35,7 +35,7 @@ const POINTS: Array<{ icon: string; title: string; body: string }> = [
 ];
 
 export default function IntroSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { Typography, Paper, Box, Stack, Divider, Icon, Chip } = ui || {};
   const showCode = useShowCode();
   if (!Paper || !Typography || !Box || !Stack) return null;
@@ -45,7 +45,7 @@ export default function IntroSection() {
       <Stack direction='row' spacing={1} alignItems='center' sx={{ mb: 1 }}>
         <Typography variant='h4'>The Horizon component kit</Typography>
         {Chip ? (
-          <Chip size='small' color='primary' label='horizonContext.ui' />
+          <Chip size='small' color='primary' label='flowContext.ui' />
         ) : null}
       </Stack>
       <Typography variant='body1' color='text.secondary' sx={{ mb: 3 }}>
@@ -94,10 +94,10 @@ export default function IntroSection() {
             one as optional and render a fallback rather than crashing the page.
           </Typography>
           <CodeBlock>
-            {`import { useHorizonContext } from '@netsapiens/horizon-sdk';
+            {`import { useFlowContext } from '@netsapiens/flow-sdk';
 
 function MyPanel() {
-  const { ui, theme, t } = useHorizonContext();
+  const { ui, theme, t } = useFlowContext();
   const { Paper, Typography, Button } = ui || {};
 
   // Always guard — an older host may not have every component yet.

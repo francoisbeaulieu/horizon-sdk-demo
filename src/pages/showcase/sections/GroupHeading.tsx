@@ -1,5 +1,5 @@
 /** A divider between showcase groups, so a long page still reads as sections. */
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 export type GroupHeadingProps = {
   /** The group name, e.g. "Inputs". */
@@ -9,7 +9,7 @@ export type GroupHeadingProps = {
 };
 
 export default function GroupHeading({ title, blurb }: GroupHeadingProps) {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { Typography, Box } = ui || {};
   if (!Typography || !Box) return null;
 

@@ -1,10 +1,10 @@
 /** Showcase section: Stack & Divider layout primitives. */
-import { useHorizonContext, useLocale } from '@netsapiens/horizon-sdk';
+import { useFlowContext, useLocale } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
 export default function LayoutSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   // Host keys for the shared vocabulary: these follow the language switch,
   // and a string hard-coded here would be English forever.
   const { t } = useLocale();
@@ -71,7 +71,7 @@ export default function LayoutSection() {
       </Stack>
 
       <SectionCode>
-        {`const { Stack, Divider, Avatar, Chip, Typography } = horizonContext.ui;
+        {`const { Stack, Divider, Avatar, Chip, Typography } = flowContext.ui;
 
 // Horizontal Stack
 <Stack direction="row" spacing={2} alignItems="center">

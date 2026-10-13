@@ -1,11 +1,11 @@
 /** Showcase section: Radio (single). */
 import { useState } from 'react';
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
 export default function RadioSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { Radio, Typography, Stack, Paper } = ui || {};
   const [radioValue, setRadioValue] = useState('option1');
   if (!Paper || !Typography || !Stack || !Radio) return null;
@@ -33,7 +33,7 @@ export default function RadioSection() {
       </Stack>
 
       <SectionCode>
-        {`const { Radio } = horizonContext.ui;
+        {`const { Radio } = flowContext.ui;
 const [radioValue, setRadioValue] = useState('option1');
 
 <Stack spacing={1}>

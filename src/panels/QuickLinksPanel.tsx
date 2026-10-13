@@ -5,7 +5,7 @@
  * TopbarHelpButton). Rendered inside Horizon's shared SidePanel drawer, so it
  * receives the host `context` (ui, theme, …) and a `close` callback.
  */
-import type { SidePanelContentProps } from '@netsapiens/horizon-sdk';
+import type { SidePanelContentProps } from '@netsapiens/flow-sdk';
 
 const LINKS = [
   {

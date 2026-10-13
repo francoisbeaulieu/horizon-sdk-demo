@@ -11,7 +11,7 @@
  * in that panel and the count here always agree. Two surfaces disagreeing about
  * one number is the thing a dashboard is least forgiven for.
  */
-import type { WidgetComponentProps } from '@netsapiens/horizon-sdk';
+import type { WidgetComponentProps } from '@netsapiens/flow-sdk';
 
 import { type ZoneMarkerProps } from '../integration/withZoneTestId';
 import { CONTACTS_SYNCED_24H, SYNC_FAILURES_24H } from '../mocks/syncQueue';
