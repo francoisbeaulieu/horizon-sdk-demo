@@ -70,7 +70,7 @@ module.exports = (_env, argv) => {
             requiredVersion: '^1.9.2',
             eager: false,
           },
-          // '@netsapiens/horizon-sdk' is intentionally NOT listed here. The host does
+          // '@netsapiens/flow-sdk' is intentionally NOT listed here. The host does
           // not register the SDK as a shared module, so declaring it shared cannot
           // resolve to a host copy — and bundle verification rejects a bundle that
           // declares it. Bundle it normally.

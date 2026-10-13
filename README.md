@@ -393,7 +393,7 @@ onCallEnded`, `services/callEnrichment.ts` looks the caller up in the mock CRM,
 and the result reaches `CallerInfoWidget` and the Live Calls dashboard card.
 
 The full reference — every method, its grant, who may see what, and the status
-model — is in the SDK package's `docs/STREAMS.md`.
+model — ships in the SDK package as `STREAMS.md`: `node_modules/@netsapiens/flow-sdk/STREAMS.md`, or the [Code tab on npm](https://www.npmjs.com/package/@netsapiens/flow-sdk?activeTab=code) (from the release after 0.3.0).
 
 The enriched call is passed to `CallerInfoWidget` over a **custom event**
 (`demo:call-updated`). The host scopes each app's event bus, so that event stays
