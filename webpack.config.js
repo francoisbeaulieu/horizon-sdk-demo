@@ -135,6 +135,12 @@ module.exports = (_env, argv) => {
     ],
     devServer: {
       port: 5005,
+      // A hosted Flow server loads this dev build cross-site, as a plain
+      // (no-cors) script — the host adds no `crossorigin` to an unpinned dev
+      // remote. webpack-dev-server 5.2+ answers that with 403 to stop other sites
+      // reading your dev bundle; 'all' lets the Flow host through. It also turns
+      // off the Host-header check, so only run this server on a machine you trust.
+      allowedHosts: 'all',
       headers: {
         'Access-Control-Allow-Origin': '*',
         // Chrome's Private Network Access: an HTTPS server's page (the host)
