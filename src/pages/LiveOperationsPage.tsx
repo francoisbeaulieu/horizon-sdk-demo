@@ -138,6 +138,7 @@ function StreamCard({
   empty,
   children,
   testId,
+  inRow = false,
 }: {
   ui: Ui;
   title: string;
@@ -146,12 +147,14 @@ function StreamCard({
   empty: string;
   children: ReactNode;
   testId: string;
+  /** Side by side with another card: share the row. Stacked cards size to content. */
+  inRow?: boolean;
 }) {
   const { Paper, Stack, Typography, Alert, Divider } = ui;
   if (!Paper || !Stack || !Typography || !Alert || !Divider) return null;
   return (
     <Paper
-      sx={{ p: 3, flex: '1 1 360px', minWidth: 0 }}
+      sx={inRow ? { p: 3, flex: '1 1 360px', minWidth: 0 } : { p: 3 }}
       data-testid={testId}
       data-state={status.state}
     >
@@ -275,6 +278,7 @@ export default function LiveOperationsPage({
         <Stack direction='row' spacing={3} useFlexGap flexWrap='wrap'>
           <StreamCard
             ui={ui}
+            inRow
             title='Queues'
             call='queues.onDomainQueues({ stats })'
             status={queueStatus}
@@ -303,6 +307,7 @@ export default function LiveOperationsPage({
 
           <StreamCard
             ui={ui}
+            inRow
             title='Agents'
             call='queues.onDomainQueues({ agentUpdated, agentAdded, agentRemoved })'
             status={agentStatus}
