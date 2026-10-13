@@ -741,9 +741,28 @@ bundle, and the analyser notes sharp size changes against the last approved
 version. That is correct behaviour and needs no action.
 
 The host also gates remotes by an **approved-domains** allowlist (defense in
-depth, on top of registration). The Horizon host approves **`*.github.io`**, so
-any GitHub Pages origin is accepted without a host-side change — clients can
-self-host their remote on their own `*.github.io` and just register it.
+depth, on top of registration), and it is an **operator** setting — not something
+a partner controls.
+
+⚠️ **`*.github.io` is not on it by default, and must not be seeded.** It is a
+public multi-tenant host: anyone can publish there, so allowlisting it by default
+would hand every GitHub user a foothold to serve JavaScript into the portal. The
+seeded list is `localhost,127.0.0.1,*.netsapiens.dev,*.nseng.dev`
+(`db/api_db_v46_NsApi.sql`).
+
+GitHub Pages remains a perfectly good jump-off point — it is where this demo is
+hosted — but an operator has to add the origin **deliberately**. Two consequences
+worth knowing:
+
+- The change is **non-retroactive**: a server that already had `*.github.io`
+  saved keeps it. So this genuinely works on some installs and not on others,
+  which is exactly why the opposite claim survived here for so long.
+- "Publish to Pages and register it" is therefore **not** a complete answer for a
+  partner on a fresh platform. If submission fails at the fetch stage, ask the
+  operator to confirm the origin is allowed. The same warning is in
+  [`MIGRATION-0.1.x-TO-0.2.x.md`](./MIGRATION-0.1.x-TO-0.2.x.md).
+
+*Verified against `netsapiens-api-v2/db/api_db_v46_NsApi.sql` on 2026-10-02.*
 
 ## Releasing a new version
 
