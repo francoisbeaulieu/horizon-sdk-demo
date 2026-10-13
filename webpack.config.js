@@ -137,6 +137,12 @@ module.exports = (_env, argv) => {
       port: 5005,
       headers: {
         'Access-Control-Allow-Origin': '*',
+        // Chrome's Private Network Access: an HTTPS server's page (the host)
+        // loading a script from localhost is preflighted, and refused unless
+        // the preflight allows the private network. The host then reports only
+        // "Script load error". Newer Chrome also asks the user once, with a
+        // "look for and connect to devices on your local network" prompt.
+        'Access-Control-Allow-Private-Network': 'true',
       },
     },
   };
