@@ -7,7 +7,20 @@ const path = require('path');
 // Single source of truth for the Module Federation container name. Used as the
 // ModuleFederationPlugin `name` AND injected via DefinePlugin as `__MF_NAME__`,
 // so App.tsx passes it to useRemoteApp without retyping the string.
-const MODULE_FEDERATION_NAME = 'horizonExtensionDemo';
+//
+// `MF_NAME` overrides it for a LOCAL run against a shared server, e.g.
+//   MF_NAME=horizonExtensionDemoLocal npm run dev
+// The app id is derived from this name (horizonExtensionDemoLocal →
+// horizon-extension-demo-local), so a local build can be registered as its own
+// app beside the published showcase instead of replacing it for everyone. The
+// name must match the registration's webpack_module exactly, or the host finds
+// no container and loads nothing.
+const MODULE_FEDERATION_NAME = process.env.MF_NAME || 'horizonExtensionDemo';
+if (!/^[A-Za-z_$][\w$]*$/.test(MODULE_FEDERATION_NAME)) {
+  throw new Error(
+    `MF_NAME must be a JavaScript identifier, got "${MODULE_FEDERATION_NAME}"`,
+  );
+}
 
 module.exports = (_env, argv) => {
   const isProduction = argv.mode === 'production';
