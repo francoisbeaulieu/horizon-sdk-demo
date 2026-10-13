@@ -61,7 +61,7 @@ import ComponentShowcasePage from './pages/ComponentShowcasePage';
 import CrmIntegrationPage from './pages/CrmIntegrationPage';
 import DemoPage from './pages/DemoPage';
 import DomainCrmSyncPage from './pages/DomainCrmSyncPage';
-import LiveOperationsPage from './pages/LiveOperationsPage';
+import LiveOperationsPage from './pages/liveOperations/LiveOperationsPage';
 import VendorDashboardPage from './pages/VendorDashboardPage';
 import { createCallEventHandler } from './services/callEnrichment';
 import { CallVolumeChart } from './widgets/CallVolumeChart';

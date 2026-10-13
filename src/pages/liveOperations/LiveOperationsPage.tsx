@@ -1,0 +1,270 @@
+import type {
+  DashboardTemplateWidget,
+  DashboardTemplateWidgetProps,
+  RemoteAppSDK,
+} from '@netsapiens/flow-sdk';
+import type { ComponentType } from 'react';
+import { useState } from 'react';
+import { useFlowContext } from '@netsapiens/flow-sdk';
+
+import { type ZoneMarkerProps } from '../../integration/withZoneTestId';
+import {
+  ActivityChart,
+  AgentsCard,
+  AgentsFreeStat,
+  AvailableStat,
+  CallsCard,
+  CallsStat,
+  NotificationsCard,
+  PhonesCard,
+  PhonesStat,
+  PresenceListCard,
+  PresenceSummaryCard,
+  QueuesCard,
+  UserChangesCard,
+  WaitingStat,
+} from './cards';
+import { QueuePickContext } from './liveContext';
+import { LiveProvider } from './liveState';
+import { QueuePanel } from './QueuePanel';
+
+/**
+ * Live Operations — a wallboard built entirely on `sdk.streams`, drawn entirely
+ * with the host's kit.
+ *
+ * The page is a `DashboardTemplate`: the host draws the header, the grid and
+ * every card frame, exactly as on its own dashboards. Tabs (`ui.Tabs`, in the
+ * header's `actions` slot) switch which cards it shows:
+ *
+ *   Overview  headline StatBlocks with sparklines, the trend Chart, live calls,
+ *             notifications
+ *   Queues    queue table (click a row → SidePanel opening `queues.onQueue`),
+ *             agents
+ *   People    presence Donut and list, user record changes
+ *   Phones    device registration
+ *
+ * Every feed is opened once by `LiveProvider` (liveState.tsx), above the
+ * template, so switching tabs or the host remounting a card never reopens one,
+ * and the trend history keeps running on every tab.
+ *
+ * What the page is there to show, beyond the data:
+ *
+ *   - **Status is part of the UI.** Every card shows its stream's status. A
+ *     `refused` stream carries a message the host wrote for the user — domain
+ *     calls, user records and queue caller details are for domain admins, and
+ *     everyone else sees why instead of an empty card.
+ *   - **One feed per need.** Queue stats and agents are two subscriptions to
+ *     the same method; the host shares the socket room between them.
+ *   - **Lifetimes follow the UI.** The queue drill-down's `onQueue` exists only
+ *     while its panel is open.
+ *   - **Grants come from the bundle.** Nothing here names a permission. The
+ *     platform reads these calls out of the bundle when a version is submitted
+ *     and derives the grants from them.
+ */
+
+interface LiveOperationsPageProps extends ZoneMarkerProps {
+  /** The app's SDK instance, handed down by App.tsx. Pages have no other way to it. */
+  sdk: RemoteAppSDK;
+}
+
+type Component = ComponentType<DashboardTemplateWidgetProps>;
+const leaf = (id: string, title: string, component: Component) => ({
+  id,
+  title,
+  component,
+});
+
+// Declared at module scope: the template keys cards by id, and a new component
+// identity on every render would remount every card each second.
+
+const OVERVIEW: DashboardTemplateWidget[] = [
+  {
+    id: 'live-ops-now',
+    title: 'Right now',
+    size: 'full',
+    height: 2,
+    refreshPolicy: 'realtime',
+    leaves: [
+      leaf('live-ops-waiting', 'Callers waiting', WaitingStat),
+      leaf('live-ops-agents-free', 'Agents free', AgentsFreeStat),
+      leaf('live-ops-calls', 'Calls in progress', CallsStat),
+      leaf('live-ops-phones', 'Phones registered', PhonesStat),
+    ],
+  },
+  {
+    id: 'live-ops-trend',
+    title: 'Last 15 minutes',
+    description: 'Sampled every ten seconds while this page is open',
+    size: 'full',
+    height: 4,
+    refreshPolicy: 'realtime',
+    component: ActivityChart,
+  },
+  {
+    id: 'live-ops-calls-table',
+    title: 'Live calls in the domain',
+    description: 'calls.onDomainCalls — domain admins only',
+    size: 'half',
+    height: 5,
+    refreshPolicy: 'realtime',
+    component: CallsCard,
+  },
+  {
+    id: 'live-ops-notifications',
+    title: 'Notifications',
+    description: 'notifications.onNotification — yours and the domain’s',
+    size: 'half',
+    height: 5,
+    refreshPolicy: 'realtime',
+    component: NotificationsCard,
+  },
+];
+
+const QUEUES: DashboardTemplateWidget[] = [
+  {
+    id: 'live-ops-queues',
+    title: 'Queues',
+    description: 'Click a queue for its live detail',
+    size: 'full',
+    height: 5,
+    refreshPolicy: 'realtime',
+    component: QueuesCard,
+  },
+  {
+    id: 'live-ops-agents',
+    title: 'Agents',
+    description: 'Agent state across the domain’s queues',
+    size: 'full',
+    height: 5,
+    refreshPolicy: 'realtime',
+    component: AgentsCard,
+  },
+];
+
+const PEOPLE: DashboardTemplateWidget[] = [
+  {
+    id: 'live-ops-people-now',
+    title: 'Right now',
+    size: 'full',
+    height: 2,
+    refreshPolicy: 'realtime',
+    leaves: [leaf('live-ops-available', 'Available', AvailableStat)],
+  },
+  {
+    id: 'live-ops-presence-summary',
+    title: 'Presence',
+    description: 'Changes as they happen; there is no starting snapshot',
+    size: 'half',
+    height: 4,
+    refreshPolicy: 'realtime',
+    component: PresenceSummaryCard,
+  },
+  {
+    id: 'live-ops-user-changes',
+    title: 'User record changes',
+    description: 'subscribers.onDomain — domain admins only',
+    size: 'half',
+    height: 4,
+    refreshPolicy: 'realtime',
+    component: UserChangesCard,
+  },
+  {
+    id: 'live-ops-presence-list',
+    title: 'Who changed status',
+    size: 'full',
+    height: 5,
+    refreshPolicy: 'realtime',
+    component: PresenceListCard,
+  },
+];
+
+const PHONES: DashboardTemplateWidget[] = [
+  {
+    id: 'live-ops-phones-table',
+    title: 'Phone registration',
+    description:
+      'devices.onDomain — admins see the domain, others their own phones',
+    size: 'full',
+    height: 6,
+    refreshPolicy: 'realtime',
+    component: PhonesCard,
+  },
+];
+
+const TABS = [
+  {
+    value: 'overview',
+    label: 'Overview',
+    icon: 'mdi:view-dashboard',
+    widgets: OVERVIEW,
+  },
+  {
+    value: 'queues',
+    label: 'Queues',
+    icon: 'mdi:account-group',
+    widgets: QUEUES,
+  },
+  {
+    value: 'people',
+    label: 'People',
+    icon: 'mdi:account-multiple',
+    widgets: PEOPLE,
+  },
+  {
+    value: 'phones',
+    label: 'Phones',
+    icon: 'mdi:phone-classic',
+    widgets: PHONES,
+  },
+];
+
+export default function LiveOperationsPage({
+  sdk,
+  ...marker
+}: LiveOperationsPageProps) {
+  const { ui } = useFlowContext();
+  const [tab, setTab] = useState<string>('overview');
+  const [queue, setQueue] = useState<string | null>(null);
+
+  const DashboardTemplate = ui?.templates?.DashboardTemplate;
+  const { Box, Tabs } = ui ?? {};
+
+  // Carve-out: without the kit there is no page to draw.
+  if (!DashboardTemplate || !Box || !Tabs) {
+    return (
+      <div {...marker} style={{ padding: 24 }}>
+        Dashboard template not available
+      </div>
+    );
+  }
+
+  const current = TABS.find((t) => t.value === tab) ?? TABS[0];
+
+  return (
+    // `Box`, not a bare div: the marker needs a root to ride on.
+    <Box {...marker}>
+      <LiveProvider sdk={sdk}>
+        <QueuePickContext.Provider value={setQueue}>
+          <DashboardTemplate
+            title='Live Operations'
+            subtitle='Queues, agents, calls, people and phones — pushed by sdk.streams, no polling.'
+            actions={
+              <Tabs
+                variant='pill'
+                options={TABS.map(({ value, label, icon }) => ({
+                  value,
+                  label,
+                  icon,
+                }))}
+                value={tab}
+                onChange={(v) => setTab(String(v))}
+              />
+            }
+            widgets={current.widgets}
+          />
+          <QueuePanel queue={queue} onClose={() => setQueue(null)} />
+        </QueuePickContext.Provider>
+      </LiveProvider>
+    </Box>
+  );
+}
