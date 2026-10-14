@@ -17,7 +17,7 @@
  * failing.
  */
 import { useMemo } from 'react';
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import type { SyncState } from '../mocks/syncQueue';
 import { buildSyncQueue } from '../mocks/syncQueue';
@@ -39,7 +39,7 @@ const ORDER: SyncState[] = ['Synced', 'Syncing', 'Queued', 'Failed'];
  * so accepting the argument only to ignore it would suggest otherwise.
  */
 export function SyncOutcomesDonut() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { Donut, Stack, Typography } = ui ?? {};
 
   // Tick 0: this is a snapshot of the queue's shape, not a live drain — the

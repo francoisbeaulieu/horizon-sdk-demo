@@ -1,11 +1,11 @@
 /** Showcase section: Switch toggle. */
 import { useState } from 'react';
-import { useHorizonContext, useLocale } from '@netsapiens/horizon-sdk';
+import { useFlowContext, useLocale } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
 export default function SwitchSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   // Host keys for the shared vocabulary: these follow the language switch,
   // and a string hard-coded here would be English forever.
   const { t } = useLocale();
@@ -14,7 +14,7 @@ export default function SwitchSection() {
   if (!Paper || !Typography || !Stack || !Switch) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         Switch
       </Typography>
@@ -32,7 +32,7 @@ export default function SwitchSection() {
       </Stack>
 
       <SectionCode>
-        {`const { Switch } = horizonContext.ui;
+        {`const { Switch } = flowContext.ui;
 const [switchValue, setSwitchValue] = useState(true);
 
 <Stack spacing={1}>

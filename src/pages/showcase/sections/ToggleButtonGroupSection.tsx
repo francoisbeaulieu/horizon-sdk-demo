@@ -1,12 +1,12 @@
 /** Showcase section: ToggleButtonGroup (exclusive + multi-select). */
 import type { SyntheticEvent } from 'react';
 import { useState } from 'react';
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
 export default function ToggleButtonGroupSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { ToggleButtonGroup, Box, Typography, Stack, Paper } = ui || {};
   const [toggleValue, setToggleValue] = useState('left');
   const [toggleMultiple, setToggleMultiple] = useState(['bold']);
@@ -14,7 +14,7 @@ export default function ToggleButtonGroupSection() {
     return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         ToggleButtonGroup
       </Typography>
@@ -57,7 +57,7 @@ export default function ToggleButtonGroupSection() {
       </Stack>
 
       <SectionCode>
-        {`const { ToggleButtonGroup } = horizonContext.ui;
+        {`const { ToggleButtonGroup } = flowContext.ui;
 const [toggleValue, setToggleValue] = useState('left');
 
 <ToggleButtonGroup

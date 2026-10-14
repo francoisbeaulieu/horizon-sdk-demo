@@ -5,7 +5,7 @@
  * the shared side panel can be opened from anywhere with row-specific content.
  * Receives the host `context` + `close`, plus the `row` the action closed over.
  */
-import type { SidePanelContentProps } from '@netsapiens/horizon-sdk';
+import type { SidePanelContentProps } from '@netsapiens/flow-sdk';
 
 interface CallDetailsPanelProps extends SidePanelContentProps {
   row: Record<string, unknown>;

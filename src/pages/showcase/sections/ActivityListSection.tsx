@@ -1,5 +1,5 @@
 /** Showcase section: ActivityList — the host's feed row. */
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
@@ -35,12 +35,12 @@ const ROWS = [
 ];
 
 export default function ActivityListSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { ActivityList, Typography, Stack, Paper } = ui || {};
   if (!Paper || !Typography || !Stack || !ActivityList) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         ActivityList
       </Typography>
@@ -52,7 +52,7 @@ export default function ActivityListSection() {
       <ActivityList rows={ROWS} width={640} emptyMessage='Nothing yet.' />
 
       <SectionCode>
-        {`const { ActivityList } = horizonContext.ui;
+        {`const { ActivityList } = flowContext.ui;
 
 <ActivityList
   width={widget.pixel.width}   // the host drops the middle column when narrow

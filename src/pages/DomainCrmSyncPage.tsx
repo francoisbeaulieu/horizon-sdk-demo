@@ -19,7 +19,7 @@
  *     no remount required, and no page reload.
  *
  * The work the page does is deliberately domain-shaped: it reads the selected
- * domain's users from the v2 API through `horizonContext.api` and reports which
+ * domain's users from the v2 API through `flowContext.api` and reports which
  * of them are linked to the (mock) vendor CRM. Change the domain, and every
  * number on the page changes with it.
  *
@@ -27,7 +27,7 @@
  * data so the page is never blank while you are looking at it.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { useHorizonContext, useManagingDomain } from '@netsapiens/horizon-sdk';
+import { useFlowContext, useManagingDomain } from '@netsapiens/flow-sdk';
 
 import { type ZoneMarkerProps } from '../integration/withZoneTestId';
 import { MOCK_CRM_DIRECTORY } from '../mocks/crm';
@@ -113,7 +113,7 @@ export default function DomainCrmSyncPage({ ...marker }: ZoneMarkerProps) {
   // The domain the admin drilled INTO. Reactive — it changes under the page.
   const { managing } = useManagingDomain();
   // `user.domain` is the admin's OWN domain and is shown only for contrast.
-  const { api, ui, user } = useHorizonContext();
+  const { api, ui, user } = useFlowContext();
 
   const [rows, setRows] = useState<SyncRow[]>(SAMPLE_ROWS);
   const [loading, setLoading] = useState(false);
@@ -200,7 +200,7 @@ export default function DomainCrmSyncPage({ ...marker }: ZoneMarkerProps) {
           this pane and see that the page followed the domain they picked
           without the app ever naming it.
         */}
-        <Paper sx={{ p: 3 }}>
+        <Paper rounded sx={{ p: 3 }}>
           <Stack spacing={1}>
             <Typography variant='h6'>Domain being managed</Typography>
             <Stack direction='row' spacing={1} alignItems='center'>
@@ -233,7 +233,7 @@ export default function DomainCrmSyncPage({ ...marker }: ZoneMarkerProps) {
           </Alert>
         ) : null}
 
-        <Paper sx={{ p: 3 }}>
+        <Paper rounded sx={{ p: 3 }}>
           <Stack spacing={2}>
             <Stack
               direction='row'

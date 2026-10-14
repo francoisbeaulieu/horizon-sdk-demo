@@ -13,7 +13,7 @@
  * where it lands — that one declares `leafOf: 'stat'` and drops into the host's
  * own stat card; this one names the category the demo's container accepts.
  */
-import type { WidgetComponentProps } from '@netsapiens/horizon-sdk';
+import type { WidgetComponentProps } from '@netsapiens/flow-sdk';
 
 import { type ZoneMarkerProps } from '../integration/withZoneTestId';
 import { CONTACTS_SYNCED_24H, SYNC_TREND_24H } from '../mocks/syncQueue';

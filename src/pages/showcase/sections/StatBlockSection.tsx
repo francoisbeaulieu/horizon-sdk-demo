@@ -1,5 +1,5 @@
 /** Showcase section: StatBlock and Donut — the dashboard's own figures. */
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
@@ -28,12 +28,12 @@ const SLICES = [
 ];
 
 export default function StatBlockSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { StatBlock, Donut, Typography, Stack, Paper, Box } = ui || {};
   if (!Paper || !Typography || !Stack || !StatBlock || !Box) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         StatBlock &amp; Donut
       </Typography>
@@ -66,7 +66,7 @@ export default function StatBlockSection() {
       ) : null}
 
       <SectionCode>
-        {`const { StatBlock, Donut } = horizonContext.ui;
+        {`const { StatBlock, Donut } = flowContext.ui;
 
 <StatBlock
   value="1,284"

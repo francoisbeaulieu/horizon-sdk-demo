@@ -6,13 +6,13 @@
  * Sections render this instead of a `Divider` plus a `CodeBlock` so that
  * hiding the code leaves no trace of where it was.
  */
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { CodeBlock } from '../../components/CodeBlock';
 import { useShowCode } from './ShowCode';
 
 export function SectionCode({ children }: { children: string }) {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const Divider = ui?.Divider;
   const showCode = useShowCode();
 

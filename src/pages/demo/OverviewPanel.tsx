@@ -1,17 +1,17 @@
 /** DemoPage tab: Overview — what the SDK does + capability cards. */
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { CAPABILITIES } from '../../content/demoContent';
 import { accentAt } from './accents';
 
 export default function OverviewPanel() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { Paper, Stack, Box, Typography, Chip } = ui || {};
   if (!Paper || !Stack || !Box || !Typography || !Chip) return null;
 
   return (
     <Stack spacing={3}>
-      <Paper>
+      <Paper rounded>
         <Typography variant='h6' gutterBottom>
           What the Horizon SDK does
         </Typography>
@@ -25,7 +25,7 @@ export default function OverviewPanel() {
         </Typography>
       </Paper>
 
-      <Paper>
+      <Paper rounded>
         <Typography variant='h6' gutterBottom>
           Capabilities
         </Typography>
@@ -39,6 +39,7 @@ export default function OverviewPanel() {
         >
           {CAPABILITIES.map((c, i) => (
             <Paper
+              rounded
               key={c.title}
               variant='outlined'
               sx={{

@@ -1,17 +1,17 @@
 /** Showcase section: RadioGroup (pre-built). */
 import { useState } from 'react';
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
 export default function RadioGroupSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { RadioGroup, Typography, Stack, Paper } = ui || {};
   const [radioGroupValue, setRadioGroupValue] = useState('all');
   if (!Paper || !Typography || !Stack || !RadioGroup) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         RadioGroup
       </Typography>
@@ -31,7 +31,7 @@ export default function RadioGroupSection() {
       />
 
       <SectionCode>
-        {`const { RadioGroup } = horizonContext.ui;
+        {`const { RadioGroup } = flowContext.ui;
 const [radioGroupValue, setRadioGroupValue] = useState('all');
 
 <RadioGroup

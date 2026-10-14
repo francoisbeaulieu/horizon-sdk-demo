@@ -2,7 +2,7 @@
 
 `callsApi.ts` fetches the signed-in user's recent call detail records (CDRs) from
 the NetSapiens v2 API and normalizes them for the **CRM Integration** demo page.
-It calls the API through the SDK's authenticated proxy (`horizonContext.api`) —
+It calls the API through the SDK's authenticated proxy (`flowContext.api`) —
 credentials never reach the remote app; the host injects auth and audits the call.
 
 ## Usage
@@ -10,7 +10,7 @@ credentials never reach the remote app; the host injects auth and audits the cal
 ```ts
 import { fetchRecentCalls } from './api/callsApi';
 
-const { api, user } = horizonContext;
+const { api, user } = flowContext;
 
 // GET /domains/{domain}/users/{user}/cdrs, normalized to RecentCall[]
 const calls = await fetchRecentCalls(user.domain, user.extension, api);

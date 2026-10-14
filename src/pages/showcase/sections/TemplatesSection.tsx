@@ -1,5 +1,5 @@
 /** Showcase section: the page- and panel-level templates. */
-import { useHorizonContext, useLocale } from '@netsapiens/horizon-sdk';
+import { useFlowContext, useLocale } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
@@ -42,7 +42,7 @@ const TEMPLATES: Array<{ name: string; what: string; where: string }> = [
 ];
 
 export default function TemplatesSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   // Host keys for the shared vocabulary: these follow the language switch,
   // and a string hard-coded here would be English forever.
   const { t } = useLocale();
@@ -50,7 +50,7 @@ export default function TemplatesSection() {
   if (!Paper || !Typography || !Stack || !Box) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         {t?.('TEMPLATES') ?? 'Templates'}
       </Typography>
@@ -93,7 +93,7 @@ export default function TemplatesSection() {
       </Stack>
 
       <SectionCode>
-        {`const { PageTemplate, DashboardTemplate } = horizonContext.ui.templates;
+        {`const { PageTemplate, DashboardTemplate } = flowContext.ui.templates;
 
 // A normal page
 <PageTemplate title="Example CRM" subtitle="…" breadcrumbs={[…]}>

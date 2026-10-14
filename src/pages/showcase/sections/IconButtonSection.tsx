@@ -1,10 +1,10 @@
 /** Showcase section: IconButton. */
-import { useHorizonContext, useLocale } from '@netsapiens/horizon-sdk';
+import { useFlowContext, useLocale } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
 export default function IconButtonSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   // Host keys for the shared vocabulary: these follow the language switch,
   // and a string hard-coded here would be English forever.
   const { t } = useLocale();
@@ -12,7 +12,7 @@ export default function IconButtonSection() {
   if (!Paper || !Typography || !Stack || !IconButton) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         IconButton
       </Typography>
@@ -35,7 +35,7 @@ export default function IconButtonSection() {
       </Stack>
 
       <SectionCode>
-        {`const { IconButton } = horizonContext.ui;
+        {`const { IconButton } = flowContext.ui;
 
 <Stack direction="row" spacing={1}>
   <IconButton icon="mdi:pencil" aria-label="Edit" />

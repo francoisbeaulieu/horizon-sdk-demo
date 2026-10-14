@@ -1,16 +1,16 @@
 /** DemoPage tab: Extension Zones — every zone this demo registers into. */
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { ZONES } from '../../content/demoContent';
 import { accentAt } from './accents';
 
 export default function ZonesPanel() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { Paper, Stack, Typography } = ui || {};
   if (!Paper || !Stack || !Typography) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h6'>Extension zones used by this demo</Typography>
       <Typography
         variant='body2'
@@ -27,6 +27,7 @@ export default function ZonesPanel() {
       <Stack spacing={2}>
         {ZONES.map((z, i) => (
           <Paper
+            rounded
             key={z.zone}
             variant='outlined'
             sx={{

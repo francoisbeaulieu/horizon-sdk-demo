@@ -1,7 +1,7 @@
 /**
  * DemoPage tab: Remote Auth — trusted identity handshake with your own backend.
  *
- * Demonstrates the full `horizonContext.auth` contract live: request a token,
+ * Demonstrates the full `flowContext.auth` contract live: request a token,
  * read the session-cached token, and clear it. The NetSapiens platform binds the
  * identity to the caller's trusted session, issues a single-use auth *code*, and
  * POSTs it (signed) to the backend's registered callback endpoint. The backend verifies the
@@ -17,12 +17,9 @@
  * (no generic `metadata` pass-through today). See examples/vendor-backend for a
  * runnable reference of the backend side.
  */
-import type {
-  RemoteAuthError,
-  RemoteAuthResponse,
-} from '@netsapiens/horizon-sdk';
+import type { RemoteAuthError, RemoteAuthResponse } from '@netsapiens/flow-sdk';
 import { useCallback, useState } from 'react';
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { CodeBlock } from '../../components/CodeBlock';
 
@@ -38,7 +35,7 @@ const SCOPES = ['contacts:read'];
 
 const CLIENT_SNIPPET = `// Simplest form: authenticate as soon as the app loads, no button.
 const { token, status, error, retry } = useRemoteAuth(
-  horizonContext,
+  flowContext,
   '${VENDOR_ID}',
   { scopes: ${JSON.stringify(SCOPES)} },
 );
@@ -46,7 +43,7 @@ const { token, status, error, retry } = useRemoteAuth(
 
 // Or drive it yourself — for a "Connect X" button, where the user picks which
 // integration to authenticate against.
-const { auth } = horizonContext;
+const { auth } = flowContext;
 let onDemand = auth.getRemoteAuthToken('${VENDOR_ID}');
 if (!onDemand) {
   onDemand = await auth.requestRemoteAuth(
@@ -132,7 +129,7 @@ const STATUS_CHIP: Record<
 };
 
 export default function RemoteAuthPanel() {
-  const { ui, auth } = useHorizonContext();
+  const { ui, auth } = useFlowContext();
 
   // Seed from the session cache so a prior connection survives a tab switch.
   const [token, setToken] = useState<RemoteAuthResponse | null>(() =>
@@ -178,7 +175,7 @@ export default function RemoteAuthPanel() {
   const chip = STATUS_CHIP[status];
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h6' gutterBottom>
         Remote authentication
       </Typography>
@@ -191,7 +188,7 @@ export default function RemoteAuthPanel() {
       </Typography>
 
       {/* Live demo */}
-      <Paper background={1} sx={{ mb: 3 }}>
+      <Paper rounded background={1} sx={{ mb: 3 }}>
         <Typography variant='subtitle2' fontWeight={600} gutterBottom>
           Try it
         </Typography>

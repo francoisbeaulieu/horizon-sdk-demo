@@ -1,15 +1,15 @@
 /** DemoPage tab: Walkthrough — jump to each surface in the host. */
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { WALKTHROUGH } from '../../content/demoContent';
 
 export default function WalkthroughPanel() {
-  const { ui, navigate } = useHorizonContext();
+  const { ui, navigate } = useFlowContext();
   const { Paper, Stack, Box, Typography, Button } = ui || {};
   if (!Paper || !Stack || !Box || !Typography || !Button) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h6'>See it in action</Typography>
       <Typography
         variant='body2'
@@ -30,7 +30,7 @@ export default function WalkthroughPanel() {
         }}
       >
         {WALKTHROUGH.map((item) => (
-          <Paper key={item.label} background={1}>
+          <Paper rounded key={item.label} background={1}>
             <Stack spacing={1.5} alignItems='flex-start'>
               <Box>
                 <Typography variant='subtitle2' fontWeight={600} gutterBottom>
@@ -52,7 +52,7 @@ export default function WalkthroughPanel() {
         ))}
       </Box>
 
-      <Paper background={1} sx={{ mt: 3 }}>
+      <Paper rounded background={1} sx={{ mt: 3 }}>
         <Typography variant='subtitle2' fontWeight={600} gutterBottom>
           Everywhere
         </Typography>

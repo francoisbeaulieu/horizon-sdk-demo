@@ -1,5 +1,5 @@
 /** Showcase section: DatagridTemplate (sortable/filterable data table). */
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { DATAGRID_SAMPLE_USERS } from '../../../mocks/datagridSample';
 import { SectionCode } from '../SectionCode';
@@ -46,13 +46,13 @@ const PAGE_SIZE_OPTIONS = [5, 10, 25];
 const getRowId = (row: { id: string | number }) => row.id;
 
 export default function DataGridSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { Box, Typography, Paper } = ui || {};
   const { DatagridTemplate } = ui?.templates || {};
   if (!Paper || !Typography || !Box || !DatagridTemplate) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         DatagridTemplate
       </Typography>
@@ -74,7 +74,7 @@ export default function DataGridSection() {
       </Box>
 
       <SectionCode>
-        {`const { DatagridTemplate } = horizonContext.ui.templates;
+        {`const { DatagridTemplate } = flowContext.ui.templates;
 
 // Define these OUTSIDE the render. The grid caches its column set against the
 // identity of columns/actions/toolbar, so a fresh array literal per render makes

@@ -18,7 +18,7 @@
  * The chart sizes itself to the card, so `widget.pixel` is no longer read here —
  * the host derives the box and ECharts follows it.
  */
-import type { WidgetComponentProps } from '@netsapiens/horizon-sdk';
+import type { WidgetComponentProps } from '@netsapiens/flow-sdk';
 import { useMemo } from 'react';
 
 import { type ZoneMarkerProps } from '../integration/withZoneTestId';

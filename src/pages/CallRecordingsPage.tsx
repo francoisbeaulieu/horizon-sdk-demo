@@ -23,9 +23,9 @@
  * `onSelectionChange`, `initialState`, master-detail via
  * `getDetailPanelContent`, and a bounded `height`.
  */
-import type { DatagridAction, DatagridColumn } from '@netsapiens/horizon-sdk';
+import type { DatagridAction, DatagridColumn } from '@netsapiens/flow-sdk';
 import { useCallback, useMemo, useState } from 'react';
-import { useHorizonContext, useLocale } from '@netsapiens/horizon-sdk';
+import { useFlowContext, useLocale } from '@netsapiens/flow-sdk';
 
 import type { CallRecording } from '../mocks/callRecordings';
 import { type ZoneMarkerProps } from '../integration/withZoneTestId';
@@ -56,7 +56,7 @@ const INITIAL_STATE = {
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
 
 export default function CallRecordingsPage({ ...marker }: ZoneMarkerProps) {
-  const horizonContext = useHorizonContext();
+  const flowContext = useFlowContext();
   const { t } = useLocale();
 
   const [starredOnly, setStarredOnly] = useState(false);
@@ -64,7 +64,7 @@ export default function CallRecordingsPage({ ...marker }: ZoneMarkerProps) {
   const [selected, setSelected] = useState<CallRecording[]>([]);
   const [lastAction, setLastAction] = useState<string | null>(null);
 
-  const ui = horizonContext.ui;
+  const ui = flowContext.ui;
   const { PageTemplate, DatagridTemplate } = ui?.templates || {};
   const { Alert, Box, Chip, FormControlLabel, Switch, Typography } = ui || {};
 

@@ -1,5 +1,5 @@
 /** Showcase section: CarouselTemplate (horizontally-rotating strip). */
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
@@ -62,13 +62,18 @@ const FEATURED = [
 ];
 
 export default function CarouselSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { Box, Typography, Stack, Paper, Chip } = ui || {};
   const { CarouselTemplate, Icon } = ui?.templates || {};
   if (!Paper || !Typography || !Stack || !Box || !CarouselTemplate) return null;
 
   const slide = (item: (typeof FEATURED)[number]) => (
-    <Paper key={item.name} variant='outlined' sx={{ p: 2, height: '100%' }}>
+    <Paper
+      rounded
+      key={item.name}
+      variant='outlined'
+      sx={{ p: 2, height: '100%' }}
+    >
       <Stack spacing={1}>
         {Icon ? <Icon name={item.icon} size={24} /> : null}
         <Typography variant='subtitle2' fontWeight={600}>
@@ -82,7 +87,7 @@ export default function CarouselSection() {
   );
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         CarouselTemplate
       </Typography>
@@ -143,7 +148,7 @@ export default function CarouselSection() {
       </Stack>
 
       <SectionCode>
-        {`const { CarouselTemplate } = horizonContext.ui.templates;
+        {`const { CarouselTemplate } = flowContext.ui.templates;
 
 // Slides are children — one per item, and a slide is whatever you render.
 // itemMinWidth (px) drives how many fit per page at each breakpoint.

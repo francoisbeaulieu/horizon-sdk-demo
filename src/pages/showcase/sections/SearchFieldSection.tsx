@@ -1,6 +1,6 @@
 /** Showcase section: SearchField and Autocomplete. */
 import { useState } from 'react';
-import { useHorizonContext, useLocale } from '@netsapiens/horizon-sdk';
+import { useFlowContext, useLocale } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
@@ -12,7 +12,7 @@ const OPTIONS = [
 ];
 
 export default function SearchFieldSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   // Host keys for the shared vocabulary: these follow the language switch,
   // and a string hard-coded here would be English forever.
   const { t } = useLocale();
@@ -23,7 +23,7 @@ export default function SearchFieldSection() {
   if (!Paper || !Typography || !Stack || !SearchField) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         SearchField &amp; Autocomplete
       </Typography>
@@ -55,7 +55,7 @@ export default function SearchFieldSection() {
       </Stack>
 
       <SectionCode>
-        {`const { SearchField, Autocomplete } = horizonContext.ui;
+        {`const { SearchField, Autocomplete } = flowContext.ui;
 
 // Debounced by the host, so onChange fires on settled values — filter or
 // fetch straight from it. debounceMs={0} opts out.

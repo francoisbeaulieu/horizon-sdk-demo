@@ -14,7 +14,7 @@
  * remount, the poll counter below visibly restarts at zero — which is the
  * clearest way to show what Refresh actually does.
  */
-import type { WidgetComponentProps } from '@netsapiens/horizon-sdk';
+import type { WidgetComponentProps } from '@netsapiens/flow-sdk';
 import { useEffect, useMemo, useState } from 'react';
 
 import type { SyncQueueRow, SyncState } from '../mocks/syncQueue';

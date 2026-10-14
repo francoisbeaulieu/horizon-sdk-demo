@@ -6,7 +6,7 @@
  * data.
  *
  *   - apiProxy  — the recent-call list is fetched live from the NetSapiens v2
- *                 API through horizonContext.api; credentials never reach this
+ *                 API through flowContext.api; credentials never reach this
  *                 remote app.
  *   - CRM match — selecting a call resolves the caller in the (mock) CRM — the
  *                 same directory that powers the CallerInfoWidget — so the page
@@ -21,7 +21,7 @@
  */
 import type { ComponentType } from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import { useHorizonContext, useLocale } from '@netsapiens/horizon-sdk';
+import { useFlowContext, useLocale } from '@netsapiens/flow-sdk';
 
 import type { RecentCall } from '../mocks/recentCalls';
 import { fetchRecentCalls } from '../api/callsApi';
@@ -52,7 +52,7 @@ const VENDOR_CRM_BASE_URL = 'https://app.example-crm.example';
  *   const VENDOR_ID = 'example-crm';
  *
  *   async function fetchCrmRecord(
- *     auth: ReturnType<typeof useHorizonContext>['auth'],
+ *     auth: ReturnType<typeof useFlowContext>['auth'],
  *     phoneNumber: string,
  *   ): Promise<CrmRecord | undefined> {
  *     // 1. Reuse a session-cached vendor token, or broker a new handshake.
@@ -98,9 +98,9 @@ const VENDOR_CRM_BASE_URL = 'https://app.example-crm.example';
 type LiveStatus = 'loading' | 'live' | 'empty' | 'error';
 
 export default function CrmIntegrationPage({ ...marker }: ZoneMarkerProps) {
-  const horizonContext = useHorizonContext();
+  const flowContext = useFlowContext();
   const { t } = useLocale();
-  const { user, api } = horizonContext;
+  const { user, api } = flowContext;
 
   // apiProxy: the signed-in user's recent calls from the NetSapiens v2 API.
   const [liveCalls, setLiveCalls] = useState<RecentCall[]>([]);
@@ -160,7 +160,7 @@ export default function CrmIntegrationPage({ ...marker }: ZoneMarkerProps) {
     ? lookupCrmRecord(normalizePhoneNumber(selectedCall.party))
     : undefined;
 
-  const ui = horizonContext.ui;
+  const ui = flowContext.ui;
   const { PageTemplate } = ui?.templates || {};
   const { Paper, Stack, Typography, Chip, Alert, Divider, Box, Button } =
     ui || {};
@@ -215,7 +215,7 @@ export default function CrmIntegrationPage({ ...marker }: ZoneMarkerProps) {
               <code>
                 GET /domains/{'{domain}'}/users/{'{user}'}/cdrs
               </code>{' '}
-              through <code>horizonContext.api</code> on load.
+              through <code>flowContext.api</code> on load.
             </Alert>
           ))}
 
@@ -228,6 +228,7 @@ export default function CrmIntegrationPage({ ...marker }: ZoneMarkerProps) {
         >
           {/* Left: recent calls */}
           <Paper
+            rounded
             sx={{ p: 0, flex: '1 1 360px', minWidth: 300, overflow: 'hidden' }}
           >
             <Typography
@@ -296,7 +297,7 @@ export default function CrmIntegrationPage({ ...marker }: ZoneMarkerProps) {
           </Paper>
 
           {/* Right: matched CRM record (mock data) */}
-          <Paper sx={{ flex: '1 1 320px', minWidth: 280 }}>
+          <Paper rounded sx={{ flex: '1 1 320px', minWidth: 280 }}>
             <Stack
               direction='row'
               alignItems='center'
@@ -378,7 +379,7 @@ export default function CrmIntegrationPage({ ...marker }: ZoneMarkerProps) {
         {Divider && <Divider />}
 
         {/* Footer — what the SDK made possible on this page. */}
-        <Paper>
+        <Paper rounded>
           <Typography variant='h6' gutterBottom>
             About this integration
           </Typography>
@@ -389,10 +390,10 @@ export default function CrmIntegrationPage({ ...marker }: ZoneMarkerProps) {
             <em>inside</em> Horizon, something the host doesn't do natively.
           </Typography>
           <Typography variant='body2' color='text.secondary'>
-            The recent-call list is a live <code>horizonContext.api</code> call
-            to the NetSapiens v2 API, proxied and audited by the host —
-            credentials never reach this remote. Caller matching reuses the same
-            mock CRM directory that powers the inbound-call widget. In a real
+            The recent-call list is a live <code>flowContext.api</code> call to
+            the NetSapiens v2 API, proxied and audited by the host — credentials
+            never reach this remote. Caller matching reuses the same mock CRM
+            directory that powers the inbound-call widget. In a real
             integration, your app would authenticate to the CRM backend on
             behalf of the Horizon user via <code>auth.requestRemoteAuth</code>{' '}
             (see the <strong>Remote Auth</strong> tab) and pull live records

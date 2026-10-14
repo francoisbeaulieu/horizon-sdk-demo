@@ -1,16 +1,16 @@
 /** DemoPage tab: Code — the registration snippets this demo uses. */
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { CodeBlock } from '../../components/CodeBlock';
 import { CODE_EXAMPLES } from '../../content/demoContent';
 
 export default function CodePanel() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { Paper, Stack, Typography } = ui || {};
   if (!Paper || !Stack || !Typography) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h6' sx={{ mb: 3 }}>
         How this demo registers
       </Typography>

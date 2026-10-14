@@ -17,7 +17,7 @@
 import type {
   ExtensionAction,
   ExtensionActionContext,
-} from '@netsapiens/horizon-sdk';
+} from '@netsapiens/flow-sdk';
 
 /** Shape of the table state the host publishes into `pageContext`. */
 interface TablePageContext {

@@ -1,5 +1,5 @@
 /** Showcase section: the static Table primitives. */
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
@@ -10,7 +10,7 @@ const ROWS = [
 ];
 
 export default function TableSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const {
     Table,
     TableHead,
@@ -33,7 +33,7 @@ export default function TableSection() {
   }
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         Table
       </Typography>
@@ -66,7 +66,7 @@ export default function TableSection() {
 
       <SectionCode>
         {`const { Table, TableHead, TableBody, TableRow, TableCell } =
-  horizonContext.ui;
+  flowContext.ui;
 
 <Table size="small">
   <TableHead>

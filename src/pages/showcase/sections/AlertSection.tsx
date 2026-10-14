@@ -1,15 +1,15 @@
 /** Showcase section: Alert severities. */
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
 export default function AlertSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { Alert, Typography, Stack, Paper } = ui || {};
   if (!Paper || !Typography || !Stack || !Alert) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         Alert
       </Typography>
@@ -29,7 +29,7 @@ export default function AlertSection() {
       </Stack>
 
       <SectionCode>
-        {`const { Alert } = horizonContext.ui;
+        {`const { Alert } = flowContext.ui;
 
 <Stack spacing={2}>
   <Alert severity="info">This is an info alert — check it out!</Alert>

@@ -18,7 +18,7 @@
  * Recordings page lists, so the dashboard stat and the page agree — which is
  * what a real widget-plus-page pairing looks like.
  */
-import type { WidgetComponentProps } from '@netsapiens/horizon-sdk';
+import type { WidgetComponentProps } from '@netsapiens/flow-sdk';
 
 import { type ZoneMarkerProps } from '../integration/withZoneTestId';
 import { SAMPLE_CALL_RECORDINGS } from '../mocks/callRecordings';

@@ -1,8 +1,8 @@
 import type {
   ExtensionComponentProps,
   SidePanelContentProps,
-} from '@netsapiens/horizon-sdk';
-import { useSidePanel } from '@netsapiens/horizon-sdk';
+} from '@netsapiens/flow-sdk';
+import { useSidePanel } from '@netsapiens/flow-sdk';
 
 import { type ZoneMarkerProps } from '../integration/withZoneTestId';
 import { CallDetailsPanel } from '../panels/CallDetailsPanel';
@@ -23,7 +23,7 @@ export function QuickActionButton({
     context.pageContext as { row?: Record<string, unknown> } | undefined
   )?.row;
   const { IconButton } = context.ui ?? {};
-  // Pass context.eventBus: extension components render outside HorizonContextProvider.
+  // Pass context.eventBus: extension components render outside FlowContextProvider.
   const { open } = useSidePanel(context.eventBus);
 
   if (!row) return null;

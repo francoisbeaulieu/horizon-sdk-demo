@@ -22,4 +22,4 @@ keep sample content out of the page/component files so those stay focused on UI.
 > pure function of its inputs.
 
 > The only **live** data in the demo is the CRM Integration page's call to
-> `GET /domains/{domain}/users/{user}/cdrs` via `horizonContext.api`.
+> `GET /domains/{domain}/users/{user}/cdrs` via `flowContext.api`.

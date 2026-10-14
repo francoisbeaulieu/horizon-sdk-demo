@@ -1,16 +1,16 @@
 /** Showcase section: List primitives and the Code surface. */
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
 export default function ListSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { List, ListItem, ListItemText, Code, Typography, Paper, Box } =
     ui || {};
   if (!Paper || !Typography || !List || !ListItem || !ListItemText) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         List &amp; Code
       </Typography>
@@ -57,7 +57,7 @@ export default function ListSection() {
       ) : null}
 
       <SectionCode>
-        {`const { List, ListItem, ListItemText, Code } = horizonContext.ui;
+        {`const { List, ListItem, ListItemText, Code } = flowContext.ui;
 
 // component='ol' is the semantics; the sx is what draws the numbers.
 <List component="ol" sx={{ listStyle: 'decimal', pl: 3,

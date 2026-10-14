@@ -18,8 +18,8 @@
  * rendering, and on a domain-scoped dashboard `context.managing` tells it which
  * domain is on screen.
  */
-import type { WidgetComponentProps } from '@netsapiens/horizon-sdk';
-import { useSidePanel } from '@netsapiens/horizon-sdk';
+import type { WidgetComponentProps } from '@netsapiens/flow-sdk';
+import { useSidePanel } from '@netsapiens/flow-sdk';
 
 import { type ZoneMarkerProps } from '../integration/withZoneTestId';
 import { QuickLinksPanel } from '../panels/QuickLinksPanel';
@@ -47,7 +47,7 @@ export function PartnerLinksWidget({
   const { Stack, Typography, Button, Divider, Code } = context.ui ?? {};
   const navigate = context.navigate;
 
-  // Pass `context.eventBus`: a widget renders outside HorizonContextProvider,
+  // Pass `context.eventBus`: a widget renders outside FlowContextProvider,
   // exactly as a zone extension does, so the hook has no context to read.
   const { open } = useSidePanel(context.eventBus);
 

@@ -7,7 +7,7 @@
  *   - 10 zone extensions        (sdk.registerDynamicExtension)
  *   - 1 dynamic table column    (sdk.registerDynamicColumn)
  *   - 9 dashboard widgets       (sdk.registerWidget)
- *   - 1 call-event subscription (sdk.subscribeToCallEvents)
+ *   - 4 softphone streams       (sdk.streams.softphone)
  *
  * Pattern-based extensions need no pre-defined extension points — each
  * registration targets a zone plus one or more route patterns, and the host
@@ -38,13 +38,13 @@
  * `useManagingDomain()`. Contrast it with CRM Integration directly above,
  * which sits at plain `/manage` and is the same page for every domain.
  */
-import type { CallEvent, WidgetComponentProps } from '@netsapiens/horizon-sdk';
+import type { WidgetComponentProps } from '@netsapiens/flow-sdk';
 import { useEffect, useMemo } from 'react';
 import {
-  HorizonContext,
-  HorizonContextProvider,
+  FlowContext,
+  FlowContextProvider,
   useRemoteApp,
-} from '@netsapiens/horizon-sdk';
+} from '@netsapiens/flow-sdk';
 
 import type { ZoneMarkerProps } from './integration/withZoneTestId';
 import { CrmStatusCell } from './columns/CrmStatusColumn';
@@ -61,6 +61,7 @@ import ComponentShowcasePage from './pages/ComponentShowcasePage';
 import CrmIntegrationPage from './pages/CrmIntegrationPage';
 import DemoPage from './pages/DemoPage';
 import DomainCrmSyncPage from './pages/DomainCrmSyncPage';
+import LiveOperationsPage from './pages/liveOperations/LiveOperationsPage';
 import VendorDashboardPage from './pages/VendorDashboardPage';
 import { createCallEventHandler } from './services/callEnrichment';
 import { CallVolumeChart } from './widgets/CallVolumeChart';
@@ -137,33 +138,33 @@ const PartnerLinksWidgetTagged = withZoneTestId<WidgetComponentProps>(
   widgetTestId('demo-partner-links'),
 );
 
-export default function App(horizonContext: HorizonContext) {
+export default function App(flowContext: FlowContext) {
   // `__MF_NAME__` is injected at build time (webpack DefinePlugin) from the
   // single MODULE_FEDERATION_NAME constant in webpack.config.js — the same value
   // used as the ModuleFederationPlugin `name`, so the container name lives in one
   // place. The SDK derives the kebab app id ('horizon-extension-demo') from it for
   // registry attribution.
-  const { sdk, user, theme } = useRemoteApp(horizonContext, __MF_NAME__);
+  const { sdk, user, theme } = useRemoteApp(flowContext, __MF_NAME__);
 
   // The page wrappers below are memoized with empty deps so component identity
-  // stays stable across host re-renders, which freezes `horizonContext` at first
-  // paint. That is fine: HorizonContextProvider keeps `theme`, `locale`,
+  // stays stable across host re-renders, which freezes `flowContext` at first
+  // paint. That is fine: FlowContextProvider keeps `theme`, `locale`,
   // `managing` and `ui` live from host events (`ui` rides on `theme:changed`),
-  // so pages read the current color mode through useHorizonContext(). Needs a
+  // so pages read the current color mode through useFlowContext(). Needs a
   // host that sends `ui` with `theme:changed`; on an older one `ui.theme` and
   // `ui.styles` stay on the first-paint mode — another reason to use `ui.*`
   // components and palette paths rather than painting from tokens.
   // Full-page route components, wrapped once so they render with the live
-  // HorizonContext (theme/locale/ui) available via useHorizonContext().
+  // FlowContext (theme/locale/ui) available via useFlowContext().
   const DemoPageWithContext = useMemo(
     () =>
       // Forward the marker props withZoneTestId injects (data-testid/data-zone)
       // into the page so it can tag its own root — otherwise they're dropped.
       function DemoPageWithContext(props: ZoneMarkerProps) {
         return (
-          <HorizonContextProvider context={horizonContext}>
+          <FlowContextProvider context={flowContext}>
             <DemoPage {...props} />
-          </HorizonContextProvider>
+          </FlowContextProvider>
         );
       },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -174,9 +175,9 @@ export default function App(horizonContext: HorizonContext) {
     () =>
       function ComponentShowcasePageWithContext(props: ZoneMarkerProps) {
         return (
-          <HorizonContextProvider context={horizonContext}>
+          <FlowContextProvider context={flowContext}>
             <ComponentShowcasePage {...props} />
-          </HorizonContextProvider>
+          </FlowContextProvider>
         );
       },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -187,9 +188,24 @@ export default function App(horizonContext: HorizonContext) {
     () =>
       function CrmIntegrationPageWithContext(props: ZoneMarkerProps) {
         return (
-          <HorizonContextProvider context={horizonContext}>
+          <FlowContextProvider context={flowContext}>
             <CrmIntegrationPage {...props} />
-          </HorizonContextProvider>
+          </FlowContextProvider>
+        );
+      },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [], // stable identity prevents the host from remounting the page
+  );
+
+  // The one page that needs the SDK itself, for its sdk.streams subscriptions.
+  // `sdk` is stable for the life of the app (useRemoteApp keeps it in a ref).
+  const LiveOperationsPageWithContext = useMemo(
+    () =>
+      function LiveOperationsPageWithContext(props: ZoneMarkerProps) {
+        return (
+          <FlowContextProvider context={flowContext}>
+            <LiveOperationsPage sdk={sdk} {...props} />
+          </FlowContextProvider>
         );
       },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -200,9 +216,9 @@ export default function App(horizonContext: HorizonContext) {
     () =>
       function DomainCrmSyncPageWithContext(props: ZoneMarkerProps) {
         return (
-          <HorizonContextProvider context={horizonContext}>
+          <FlowContextProvider context={flowContext}>
             <DomainCrmSyncPage {...props} />
-          </HorizonContextProvider>
+          </FlowContextProvider>
         );
       },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -213,9 +229,9 @@ export default function App(horizonContext: HorizonContext) {
     () =>
       function VendorDashboardPageWithContext(props: ZoneMarkerProps) {
         return (
-          <HorizonContextProvider context={horizonContext}>
+          <FlowContextProvider context={flowContext}>
             <VendorDashboardPage {...props} />
-          </HorizonContextProvider>
+          </FlowContextProvider>
         );
       },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -226,9 +242,9 @@ export default function App(horizonContext: HorizonContext) {
     () =>
       function CallRecordingsPageWithContext(props: ZoneMarkerProps) {
         return (
-          <HorizonContextProvider context={horizonContext}>
+          <FlowContextProvider context={flowContext}>
             <CallRecordingsPage {...props} />
-          </HorizonContextProvider>
+          </FlowContextProvider>
         );
       },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -254,6 +270,25 @@ export default function App(horizonContext: HorizonContext) {
       })
       .catch((error) =>
         console.error('[Demo App] Failed to register demo page:', error),
+      );
+
+    // Live Operations — the sdk.streams example. Deliberately NOT narrowed by
+    // requiredScopes: a Basic User reaches the page and sees the domain-calls
+    // card refused with the host's own message, which is half of the lesson.
+    sdk
+      .registerRoute({
+        id: 'ucaas-live-operations',
+        parentPath: '/apps',
+        path: 'live-operations',
+        label: 'Live Operations',
+        icon: 'mdi:monitor-dashboard',
+        component: withZoneTestId(
+          LiveOperationsPageWithContext,
+          routeTestId('ucaas-live-operations'),
+        ),
+      })
+      .catch((error) =>
+        console.error('[Demo App] Failed to register Live Operations:', error),
       );
 
     sdk
@@ -395,18 +430,20 @@ export default function App(horizonContext: HorizonContext) {
     // ============================================================
     // 2. CALL EVENTS — enrich inbound calls from the mock CRM
     // ============================================================
-    // Subscribe through the capability-gated, app-scoped SDK path (NOT the raw
-    // event bus) so the platform enforces the call-events capability and records
-    // that this app consumes call events. The handler lives in
-    // services/callEnrichment.ts.
-    const unsubscribeCallEvents = sdk.subscribeToCallEvents(
-      ['call-started', 'call-answered', 'call-missed', 'call-ended'],
-      // The SDK's CallEvent type is looser than the runtime payload the demo
-      // relies on (from/to/direction/timestamp), so cast at this boundary.
-      createCallEventHandler(horizonContext.eventBus) as unknown as (
-        event: CallEvent,
-      ) => void,
+    // The signed-in user's own softphone, through sdk.streams (NOT the raw
+    // event bus): the host checks this app's `softphone` grant on every event.
+    // One method per lifecycle step, all feeding the same handler, which lives
+    // in services/callEnrichment.ts.
+    const onCall = createCallEventHandler(
+      flowContext.eventBus,
+      user?.extension ?? '',
     );
+    const softphoneStreams = [
+      sdk.streams.softphone.onCallStarted(onCall),
+      sdk.streams.softphone.onCallAnswered(onCall),
+      sdk.streams.softphone.onCallMissed(onCall),
+      sdk.streams.softphone.onCallEnded(onCall),
+    ];
 
     // ============================================================
     // 3. DYNAMIC EXTENSIONS + COLUMN — inject into host zones
@@ -640,9 +677,9 @@ export default function App(horizonContext: HorizonContext) {
       // Gates on what the APP was granted, not on who the user is — the other
       // half of the pair `requiredScopes` starts. The host checks it before this
       // reaches the catalogue, so a platform with call events switched off never
-      // offers a card that could only ever be empty. Same capability
-      // `subscribeToCallEvents` is gated on, declared where a dashboard sees it.
-      requiredPermissions: ['call-events:listen'],
+      // offers a card that could only ever be empty. Same grant the softphone
+      // streams are checked against, declared where a dashboard sees it.
+      requiredPermissions: ['streams:softphone'],
       // The app's own predicate, evaluated last and on every read. This widget
       // cannot render without the bus, so it declines to be offered without one.
       // A condition that throws hides the widget rather than taking the
@@ -735,7 +772,7 @@ export default function App(horizonContext: HorizonContext) {
     });
 
     return () => {
-      unsubscribeCallEvents();
+      softphoneStreams.forEach((stream) => stream.unsubscribe());
       // By the same plain names they were registered under — the host resolves
       // the prefix, here as at registration. A container is withdrawn like any
       // other widget; the host keeps its slot and shows the leaves as pending
@@ -752,8 +789,10 @@ export default function App(horizonContext: HorizonContext) {
     };
   }, [
     sdk,
-    horizonContext.eventBus,
+    flowContext.eventBus,
+    user?.extension,
     DemoPageWithContext,
+    LiveOperationsPageWithContext,
     DomainCrmSyncPageWithContext,
     ComponentShowcasePageWithContext,
     CrmIntegrationPageWithContext,

@@ -7,7 +7,7 @@
  * beside it teaches the reader something false. The variations below are the
  * ones that actually move.
  */
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
@@ -38,12 +38,12 @@ const ROWS: Array<{ title: string; note: string; variant?: string }> = [
 ];
 
 export default function ChipSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { Chip, Icon, Typography, Stack, Paper, Box } = ui || {};
   if (!Paper || !Typography || !Stack || !Chip || !Box) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         Chip
       </Typography>
@@ -107,7 +107,7 @@ export default function ChipSection() {
       </Stack>
 
       <SectionCode>
-        {`const { Chip } = horizonContext.ui;
+        {`const { Chip } = flowContext.ui;
 
 // Colour is semantic, and the same six everywhere:
 //   neutral · primary · success · warning · error · info

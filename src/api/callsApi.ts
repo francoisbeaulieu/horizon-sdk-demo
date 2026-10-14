@@ -2,7 +2,7 @@
  * Recent-calls API helper for the CRM Integration page.
  *
  * Fetches the signed-in user's recent call detail records (CDRs) from the
- * NetSapiens v2 API through the SDK's authenticated `horizonContext.api` proxy.
+ * NetSapiens v2 API through the SDK's authenticated `flowContext.api` proxy.
  * Credentials never reach this remote app — the host injects auth and audits the
  * call. The page falls back to sample data on any failure so it's never empty.
  *
@@ -11,7 +11,7 @@
  * filter the feed down to actual calls the signed-in user took part in, so the
  * page shows a clean call history (not registration noise or platform traffic).
  */
-import type { HorizonApiClient } from '@netsapiens/horizon-sdk';
+import type { FlowApiClient } from '@netsapiens/flow-sdk';
 
 import type { RecentCall } from '../mocks/recentCalls';
 import { normalizePhoneNumber } from '../mocks/crm';
@@ -98,7 +98,7 @@ function isNonRealCall(c: NetSapiensCdr): boolean {
 export async function fetchRecentCalls(
   domain: string,
   userId: string,
-  apiClient: HorizonApiClient,
+  apiClient: FlowApiClient,
 ): Promise<RecentCall[]> {
   if (!apiClient) throw new Error('API client is not defined');
   if (!domain) throw new Error('domain is required');

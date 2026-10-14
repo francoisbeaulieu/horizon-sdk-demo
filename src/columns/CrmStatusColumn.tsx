@@ -27,7 +27,7 @@
  * what makes the cell follow the host's light/dark toggle — the hardcoded-hex
  * version this pattern replaced looked identical in both schemes.
  */
-import type { ExtensionContext } from '@netsapiens/horizon-sdk';
+import type { ExtensionContext } from '@netsapiens/flow-sdk';
 
 import type { CrmStatus } from '../mocks/crmStatus';
 import { type ZoneMarkerProps } from '../integration/withZoneTestId';

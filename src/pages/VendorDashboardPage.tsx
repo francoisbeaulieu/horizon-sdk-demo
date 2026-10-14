@@ -28,9 +28,9 @@ import type {
   DashboardTemplateWidgetProps,
   ExtensionContext,
   WidgetComponentProps,
-} from '@netsapiens/horizon-sdk';
+} from '@netsapiens/flow-sdk';
 import type { ComponentType } from 'react';
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { VENDOR_DASHBOARD_CARDS } from '../content/vendorDashboardContent';
 import { type ZoneMarkerProps } from '../integration/withZoneTestId';
@@ -46,14 +46,14 @@ import { SyncQueueTable } from '../widgets/SyncQueueTable';
  * Run a dashboard widget on a template page.
  *
  * A registered widget is handed `{ context, widget, actions }` by the host. On a
- * page the app is already inside `HorizonContextProvider`, so the context comes
- * from `useHorizonContext()` instead — the same `ui`, live with the colour mode.
+ * page the app is already inside `FlowContextProvider`, so the context comes
+ * from `useFlowContext()` instead — the same `ui`, live with the colour mode.
  *
  * `actions` are no-ops, and honestly so: remove, resize and refresh act on a
  * grid the reader arranged, and there is no such grid here. A widget that calls
  * one gets nothing rather than a broken frame.
  *
- * The cast is the seam between two context shapes. `HorizonContext` is the
+ * The cast is the seam between two context shapes. `FlowContext` is the
  * page-level object and `ExtensionContext` the injected one; they overlap on
  * everything a widget reads (`ui`, `theme`, `eventBus`, `t`), which is why one
  * component can serve both surfaces at all.
@@ -63,7 +63,7 @@ function asPageWidget(
   testId: string,
 ) {
   return function PageWidget({ widget }: DashboardTemplateWidgetProps) {
-    const context = useHorizonContext();
+    const context = useFlowContext();
 
     return (
       <Widget
@@ -125,7 +125,7 @@ const COMPONENTS: Record<
 };
 
 export default function VendorDashboardPage({ ...marker }: ZoneMarkerProps) {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const DashboardTemplate = ui?.templates?.DashboardTemplate;
   const Box = ui?.Box;
 

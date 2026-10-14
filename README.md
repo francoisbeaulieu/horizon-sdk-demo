@@ -1,7 +1,7 @@
 # Horizon SDK Demo
 
 A federated demo application showing how to extend **NetSapiens Horizon** with the
-[`@netsapiens/horizon-sdk`](https://www.npmjs.com/package/@netsapiens/horizon-sdk).
+[`@netsapiens/flow-sdk`](https://www.npmjs.com/package/@netsapiens/flow-sdk).
 It is loaded into the running Horizon host over Webpack Module Federation and
 exercises every capability the SDK exposes — full pages, zone-based UI
 extensions, a dynamic table column, dashboard widgets, live call events, and
@@ -15,7 +15,7 @@ matches Horizon in light and dark mode.
 > **Upgrading an app built against SDK 0.1.x?** Read
 > **[MIGRATION-0.1.x-TO-0.2.x.md](./MIGRATION-0.1.x-TO-0.2.x.md)** first. It covers
 > the whole of 0.2.x — bundle verification and SRI, the reversed remote-entry URL
-> policy, the new `horizonContext.ui` surfaces, and `requiredScopes` — and leads
+> policy, the new `flowContext.ui` surfaces, and `requiredScopes` — and leads
 > with the host-side changes that already affect a bundle you published months ago
 > and have not rebuilt. It replaces `MIGRATION_BUNDLE_VERIFICATION.md`, which
 > covered only the 0.2.1 half.
@@ -42,7 +42,7 @@ a backend.
 > **[DATAGRID.md](./DATAGRID.md)** for the page-layout anatomy and the `height`
 > rule that otherwise leaves your pagination footer below the fold. The same guide
 > ships inside the installed package at
-> `node_modules/@netsapiens/horizon-sdk/DATAGRID.md`. There is also a minimal
+> `node_modules/@netsapiens/flow-sdk/DATAGRID.md`. There is also a minimal
 > `DatagridTemplate` section on the Component Showcase page
 > (`src/pages/showcase/sections/DataGridSection.tsx`).
 
@@ -52,6 +52,7 @@ a backend.
 | ------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Horizon SDK Demo   | Apps                           | The overview/walkthrough page (`pages/DemoPage.tsx`).                                                                                                                                                                                                                                                                     |
 | Component Showcase | Apps                           | Reference for every shared MUI Aurora component (`pages/ComponentShowcasePage.tsx`).                                                                                                                                                                                                                                      |
+| Live Operations    | Apps                           | **The `sdk.streams` example.** A live wallboard of queues, agents, domain calls, call records, presence and phones, each card showing its stream's status — including the host's refusal for users whose scope does not allow a feed (`pages/LiveOperationsPage.tsx`).                                                    |
 | CRM Integration    | Manage (after _Call Logs_)     | Lists the user's calls from a **live** NetSapiens v2 API call, matched to their CRM record — registered into the Manage menu to show the Manage tree can be extended, not just Apps (`pages/CrmIntegrationPage.tsx`).                                                                                                     |
 | CRM Sync           | Manage, **inside a domain**    | **Domain-scoped.** Registered once at `/manage/:domain`, so it mounts under whichever domain an admin has drilled into and reads that domain with `useManagingDomain()` — one registration, every domain (`pages/DomainCrmSyncPage.tsx`).                                                                                 |
 | Call Recordings    | My Account (after _Call Logs_) | **The reference list page.** Everything — search, filter, columns, export, refresh, checkbox selection, master-detail and the pagination footer — comes from `DatagridTemplate`; the primary action sits in `PageTemplate`'s header `actions`. Shows the /home tree can be extended too (`pages/CallRecordingsPage.tsx`). |
@@ -144,7 +145,7 @@ field you use:
 ```tsx
 function DomainCrmSyncPage() {
   const { managing } = useManagingDomain(); // the domain being managed
-  const { api, user } = useHorizonContext(); // user.domain = YOUR OWN domain
+  const { api, user } = useFlowContext(); // user.domain = YOUR OWN domain
 
   useEffect(() => {
     if (!managing) return;
@@ -346,20 +347,62 @@ Check what you contributed under **Platform → UI SDK management → Registered
 apps**, which lists your widget zones and whether each is enabled. A refused
 registration logs the reason on the console; it never fails silently.
 
-### Call events — `sdk.subscribeToCallEvents()`
+### Live data — `sdk.streams`
 
-Subscribes to the live SIP call stream (`call-started` / `-answered` / `-missed`
-/ `-ended`) through the capability-gated, app-scoped SDK path (declaring the
-`call-events:subscribe` capability), enriches each inbound call with CRM data,
-and hands it to the `CallerInfoWidget`.
+Live platform data comes through `sdk.streams`: one namespace per subject (`calls`,
+`queues`, `agents`, `presence`, `contacts`, `notifications`, `subscribers`,
+`devices`, `softphone`) and one named method per feed. You pass handlers for the
+events you want; you never name a socket room or an event list. Calling a method
+_is_ the subscription, and every method returns a handle with `status`,
+`onStatus()` and `unsubscribe()`.
 
-Call events are the `call-events` specialization of the host **data-stream**
-contract: every host stream is consumed through the SDK, never the raw bus.
-`subscribeToCallEvents` delegates to `sdk.subscribeToStream('call-events', …)`;
-other host streams (`subscriber`, `device`, `registration`) use
-`subscribeToStream(streamId, eventTypes, cb)` directly. Each is gated by its
-`<streamId>:listen` capability and attributed to the app on the Registered Apps
-page — host streams are not delivered on the raw `eventBus`.
+**Live Operations** (`/apps/live-operations`, `pages/LiveOperationsPage.tsx`) is
+the worked example — a tabbed wallboard of eight feeds, each opened with `useStream`:
+
+```tsx
+const status = useStream(
+  sdk,
+  (streams) => streams.queues.onDomainQueues({ stats: (q) => upsertQueue(q) }),
+  [],
+);
+```
+
+| Card                | Call                                                                | Grant                |
+| ------------------- | ------------------------------------------------------------------- | -------------------- |
+| Queues              | `queues.onDomainQueues({ stats })`                                  | `queues`             |
+| Agents              | `queues.onDomainQueues({ agentUpdated, agentAdded, agentRemoved })` | `queues`             |
+| Live calls          | `calls.onDomainCalls({ updated, ended })`                           | `calls.domain`       |
+| Presence            | `presence.onDomain(update)`                                         | `presence`           |
+| Phones              | `devices.onDomain(update)`                                          | `devices`            |
+| Notifications       | `notifications.onNotification(update)`                              | `notifications.read` |
+| User record changes | `subscribers.onDomain(update)`                                      | `subscribers`        |
+| Call records        | `cdrs.onDomain({ completed, updated })`                             | `cdrs`               |
+
+What the page is there to show:
+
+- **Status is part of the UI.** Each card prints its stream's status. A `refused`
+  stream carries a `message` the host wrote for the user — the domain-calls card
+  is refused for anyone below Office Manager, and says so instead of sitting empty.
+- **Records change after the call.** A call record arrives on `completed` when
+  the call ends, then again on `updated` as its recording, call quality (MOS),
+  summary and disposition land. The Call records tab keeps the latest version
+  of each record and lists every delivery with the fields that changed.
+- **`live.snapshot`** says whether the host replayed what it already held. When
+  it is `false` the card fills as things change; seed from the API if you need
+  history.
+- **Nothing names a permission.** The platform reads these calls out of the
+  bundle when a version is submitted and derives the grants (`queues`,
+  `calls.domain`, `presence`, `devices`, `notifications.read`, `subscribers`,
+  `cdrs`, `softphone`); the host checks them, and the
+  operator can switch any grant off platform-wide in SDK Settings.
+
+The app's own softphone feeds the CRM enrichment: `App.tsx` subscribes to
+`sdk.streams.softphone.onCallStarted / onCallAnswered / onCallMissed /
+onCallEnded`, `services/callEnrichment.ts` looks the caller up in the mock CRM,
+and the result reaches `CallerInfoWidget` and the Live Calls dashboard card.
+
+The full reference — every method, its grant, who may see what, and the status
+model — ships in the SDK package as `STREAMS.md`: `node_modules/@netsapiens/flow-sdk/STREAMS.md`, or the [Code tab on npm](https://www.npmjs.com/package/@netsapiens/flow-sdk?activeTab=code) (from the release after 0.3.0).
 
 The enriched call is passed to `CallerInfoWidget` over a **custom event**
 (`demo:call-updated`). The host scopes each app's event bus, so that event stays
@@ -371,7 +414,7 @@ the supported pattern for an app talking to its own components.
 When the app needs to call **your own backend** on behalf of the signed-in user,
 the host relays a trusted identity handshake so the app never handles Horizon
 credentials. The **Remote Auth** tab on the demo page
-(`pages/demo/RemoteAuthPanel.tsx`) exercises the full `horizonContext.auth`
+(`pages/demo/RemoteAuthPanel.tsx`) exercises the full `flowContext.auth`
 contract live — request a token, reuse the session-cached token, and clear it:
 
 > **Changed in 0.2.x, and it changed silently.** `RemoteAuthRequest.callbackUrl` is
@@ -382,11 +425,11 @@ contract live — request a token, reuse the session-cached token, and clear it:
 > [MIGRATION §6.2](MIGRATION-0.1.x-TO-0.2.x.md#62-callbackurl-is-no-longer-yours-to-choose-breaking-but-silent).
 
 ```tsx
-const { auth } = horizonContext;
+const { auth } = flowContext;
 
 // Authenticate on load — no button. `status`: idle | pending | ready | error.
 const { token, status, error, retry } = useRemoteAuth(
-  horizonContext,
+  flowContext,
   'horizon-demo-backend',
   { scopes: ['contacts:read'] },
 );
@@ -481,7 +524,7 @@ Patterns decide which host routes an extension applies to:
 
 - Node.js 18+ (this repo pins **22.8.0** via `.nvmrc`)
 - A running Horizon host (default dev port **5003**)
-- The [`@netsapiens/horizon-sdk`](https://www.npmjs.com/package/@netsapiens/horizon-sdk)
+- The [`@netsapiens/flow-sdk`](https://www.npmjs.com/package/@netsapiens/flow-sdk)
   package is published **publicly** to npm — `npm install` needs no auth.
 
 ### Install & develop
@@ -519,7 +562,7 @@ remote use one instance each. React and React DOM in particular **must** stay
 singletons: your component renders inside the host's React tree, and a second
 copy fails as an invalid-hook-call that names nothing useful.
 
-> Do **not** add `@netsapiens/horizon-sdk` to `shared`. The host registers
+> Do **not** add `@netsapiens/flow-sdk` to `shared`. The host registers
 > `react`, `react-dom`, `react-dom/client`, `loglevel`, `i18next` and
 > `react-i18next` and nothing else, so declaring the SDK shared cannot resolve to
 > a host copy — and since SDK 0.2.x, bundle verification **rejects** a bundle
@@ -527,7 +570,7 @@ copy fails as an invalid-hook-call that names nothing useful.
 
 > Do **not** add `@mui/material` to `shared`. It is not registered by the host,
 > and declaring a singleton the host does not provide fails at load. Use MUI via
-> `horizonContext.ui` / `context.ui` so extensions inherit the host theme.
+> `flowContext.ui` / `context.ui` so extensions inherit the host theme.
 
 > Do **not** add i18next either — not because it would fail, but because you
 > should not be reaching for it. **Localization is owned by the host and the
@@ -556,7 +599,7 @@ to load with React error #527. Declare the exact key, without a fallback:
 `import: false` is deliberate and is the opposite of the rule for everything
 else — keeping the fallback emits a chunk that makes the integrity build fail.
 Full reasoning in the SDK reference under
-"[`react-dom/client`: the deep entry that breaks everything, quietly](https://www.npmjs.com/package/@netsapiens/horizon-sdk)".
+"[`react-dom/client`: the deep entry that breaks everything, quietly](https://www.npmjs.com/package/@netsapiens/flow-sdk)".
 
 ### Bundle verification (SDK 0.2.x)
 
@@ -571,14 +614,14 @@ four settings that satisfy this:
 | `SubresourceIntegrityPlugin({ hashFuncNames: ['sha384'] })`        | Emits chunk integrity values — the platform pins the entry, and without these nothing the entry loads is covered                                                                   |
 | `output.crossOriginLoading: 'anonymous'`                           | Required for the browser to verify those values at all; SRI cannot check an opaque cross-origin response                                                                           |
 | `devtool: 'source-map'` (with `sourcesContent`, never `noSources`) | **A bundle with no source maps is rejected outright**, not warned about                                                                                                            |
-| `@netsapiens/horizon-sdk` absent from `shared`                     | See above                                                                                                                                                                          |
+| `@netsapiens/flow-sdk` absent from `shared`                        | See above                                                                                                                                                                          |
 | `optimization.splitChunks.cacheGroups.default: false`              | Only needed once a bundle imports `react-dom`: webpack's default cache group can otherwise emit a chunk with no file, and the integrity plugin cannot resolve a placeholder for it |
 
 Check a build before publishing — these are the same checks the platform runs:
 
 ```bash
 npm run build
-npm run verify     # horizon-verify-bundle ./dist
+npm run verify     # flow-verify-bundle ./dist
 ```
 
 ⚠️ **The remote entry URL is stable, so the version field is load-bearing.** This
@@ -598,25 +641,25 @@ change to the bundle**, and release in a maintenance window — between the depl
 and re-verification the CDN serves new bytes while the platform still pins the
 old hash.
 
-## HorizonContext
+## FlowContext
 
-The exposed `./App` component receives a `HorizonContext` and initializes the SDK
+The exposed `./App` component receives a `FlowContext` and initializes the SDK
 via `useRemoteApp()`. Page components read the live context with
-`useHorizonContext()` (wrapped in `HorizonContextProvider`). Key fields:
+`useFlowContext()` (wrapped in `FlowContextProvider`). Key fields:
 
-| Field              | Purpose                                                                                                                                             |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `user`             | Signed-in user (`displayName`, `domain`, `extension`, `scope`, …)                                                                                   |
-| `api`              | Authenticated NetSapiens v2 API client (`get`/`post`/`put`/`delete`)                                                                                |
-| `theme` / `locale` | Host theme (`light`/`dark`) and i18next translation function                                                                                        |
-| `navigate`         | Navigate the host router                                                                                                                            |
-| `eventBus`         | Per-app **scoped** pub/sub — your custom events stay within your app; host streams use `subscribeToStream`/`subscribeToCallEvents`, not raw `.on()` |
-| `ui`               | Themed MUI Aurora components + templates (PageTemplate, SidePanel, …)                                                                               |
+| Field              | Purpose                                                                                                                     |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `user`             | Signed-in user (`displayName`, `domain`, `extension`, `scope`, …)                                                           |
+| `api`              | Authenticated NetSapiens v2 API client (`get`/`post`/`put`/`delete`)                                                        |
+| `theme` / `locale` | Host theme (`light`/`dark`) and i18next translation function                                                                |
+| `navigate`         | Navigate the host router                                                                                                    |
+| `eventBus`         | Per-app **scoped** pub/sub — your custom events stay within your app; live data comes from `sdk.streams`, never raw `.on()` |
+| `ui`               | Themed MUI Aurora components + templates (PageTemplate, SidePanel, …)                                                       |
 
 ## UI rule — never hand-roll a component
 
 Every visible element in `src/` comes from the host component kit handed over as
-`horizonContext.ui` (`ui.*` components, `ui.templates.*`). Hand-rolled markup
+`flowContext.ui` (`ui.*` components, `ui.templates.*`). Hand-rolled markup
 styled from `ui.theme` / `ui.styles` is **not** allowed: those two objects are a
 mount-time snapshot the host never rebuilds, so anything painted from them keeps
 the colors of whichever mode was active when the page first mounted and stops
@@ -631,7 +674,7 @@ The full rule, its three carve-outs, and the grep commands that check it are in
 
 ```
 src/
-  App.tsx                     # Orchestrator: registers all routes, extensions, column, widgets, call events
+  App.tsx                     # Orchestrator: registers all routes, extensions, column, widgets, softphone streams
   api/
     callsApi.ts               # NetSapiens v2 API helper (live recent-calls/CDR fetch via the proxy)
   columns/
@@ -741,9 +784,28 @@ bundle, and the analyser notes sharp size changes against the last approved
 version. That is correct behaviour and needs no action.
 
 The host also gates remotes by an **approved-domains** allowlist (defense in
-depth, on top of registration). The Horizon host approves **`*.github.io`**, so
-any GitHub Pages origin is accepted without a host-side change — clients can
-self-host their remote on their own `*.github.io` and just register it.
+depth, on top of registration), and it is an **operator** setting — not something
+a partner controls.
+
+⚠️ **`*.github.io` is not on it by default, and must not be seeded.** It is a
+public multi-tenant host: anyone can publish there, so allowlisting it by default
+would hand every GitHub user a foothold to serve JavaScript into the portal. The
+seeded list is `localhost,127.0.0.1,*.netsapiens.dev,*.nseng.dev`
+(`db/api_db_v46_NsApi.sql`).
+
+GitHub Pages remains a perfectly good jump-off point — it is where this demo is
+hosted — but an operator has to add the origin **deliberately**. Two consequences
+worth knowing:
+
+- The change is **non-retroactive**: a server that already had `*.github.io`
+  saved keeps it. So this genuinely works on some installs and not on others,
+  which is exactly why the opposite claim survived here for so long.
+- "Publish to Pages and register it" is therefore **not** a complete answer for a
+  partner on a fresh platform. If submission fails at the fetch stage, ask the
+  operator to confirm the origin is allowed. The same warning is in
+  [`MIGRATION-0.1.x-TO-0.2.x.md`](./MIGRATION-0.1.x-TO-0.2.x.md).
+
+_Verified against `netsapiens-api-v2/db/api_db_v46_NsApi.sql` on 2026-10-02._
 
 ## Releasing a new version
 
@@ -802,7 +864,7 @@ that window will not see the extension. Keep the gap short.
 
 - **Live data on the CRM Integration page.** On load it calls
   `GET /domains/{domain}/users/{user}/cdrs` for the signed-in user via
-  `horizonContext.api`, tags those rows **● Live**, and shows sample calls
+  `flowContext.api`, tags those rows **● Live**, and shows sample calls
   alongside them so the page is never empty. Caller matching reuses the same mock
   CRM directory that powers the inbound-call widget. (Authenticating to a real CRM
   backend on behalf of the user — the `auth.requestRemoteAuth` flow — is

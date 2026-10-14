@@ -7,7 +7,20 @@ const path = require('path');
 // Single source of truth for the Module Federation container name. Used as the
 // ModuleFederationPlugin `name` AND injected via DefinePlugin as `__MF_NAME__`,
 // so App.tsx passes it to useRemoteApp without retyping the string.
-const MODULE_FEDERATION_NAME = 'horizonExtensionDemo';
+//
+// `MF_NAME` overrides it for a LOCAL run against a shared server, e.g.
+//   MF_NAME=horizonExtensionDemoLocal npm run dev
+// The app id is derived from this name (horizonExtensionDemoLocal →
+// horizon-extension-demo-local), so a local build can be registered as its own
+// app beside the published showcase instead of replacing it for everyone. The
+// name must match the registration's webpack_module exactly, or the host finds
+// no container and loads nothing.
+const MODULE_FEDERATION_NAME = process.env.MF_NAME || 'horizonExtensionDemo';
+if (!/^[A-Za-z_$][\w$]*$/.test(MODULE_FEDERATION_NAME)) {
+  throw new Error(
+    `MF_NAME must be a JavaScript identifier, got "${MODULE_FEDERATION_NAME}"`,
+  );
+}
 
 module.exports = (_env, argv) => {
   const isProduction = argv.mode === 'production';
@@ -29,6 +42,17 @@ module.exports = (_env, argv) => {
       crossOriginLoading: 'anonymous',
       clean: true,
     },
+    // ⚠️ PRODUCTION REACT RUNTIME IN EVERY BUILD, dev included.
+    //
+    // React is a shared singleton, and the host supplies its PRODUCTION build.
+    // A dev build would otherwise bundle react/jsx-runtime's development variant,
+    // which calls dev-only internals on React (`dispatcher.getOwner`) that the
+    // host's React does not have — App throws on first render, registers
+    // nothing, and the host reports "loaded but registered nothing" with every
+    // route a 404. nodeEnv picks the production variant of every dependency.
+    optimization: {
+      nodeEnv: 'production',
+    },
     resolve: {
       extensions: ['.tsx', '.ts', '.js', '.jsx'],
     },
@@ -42,7 +66,11 @@ module.exports = (_env, argv) => {
             options: {
               presets: [
                 '@babel/preset-env',
-                ['@babel/preset-react', { runtime: 'automatic' }],
+                // Production JSX even in a dev build — see `optimization.nodeEnv`.
+                [
+                  '@babel/preset-react',
+                  { runtime: 'automatic', development: false },
+                ],
                 '@babel/preset-typescript',
               ],
             },
@@ -70,7 +98,7 @@ module.exports = (_env, argv) => {
             requiredVersion: '^1.9.2',
             eager: false,
           },
-          // '@netsapiens/horizon-sdk' is intentionally NOT listed here. The host does
+          // '@netsapiens/flow-sdk' is intentionally NOT listed here. The host does
           // not register the SDK as a shared module, so declaring it shared cannot
           // resolve to a host copy — and bundle verification rejects a bundle that
           // declares it. Bundle it normally.
@@ -122,8 +150,29 @@ module.exports = (_env, argv) => {
     ],
     devServer: {
       port: 5005,
+      // A hosted Flow server loads this dev build cross-site, as a plain
+      // (no-cors) script — the host adds no `crossorigin` to an unpinned dev
+      // remote. webpack-dev-server 5.2+ answers that with 403 to stop other sites
+      // reading your dev bundle; 'all' lets the Flow host through. It also turns
+      // off the Host-header check, so only run this server on a machine you trust.
+      allowedHosts: 'all',
+      // No live-reload client in the bundle. It would run inside the HOST page
+      // and keep opening ws://localhost:5005/ws from there — noise in the host's
+      // console that looks like the app opening its own sockets (it never does;
+      // sdk.streams rides the host's socket). Reload the host page to pick up a
+      // rebuild instead.
+      hot: false,
+      liveReload: false,
+      client: false,
+      webSocketServer: false,
       headers: {
         'Access-Control-Allow-Origin': '*',
+        // Chrome's Private Network Access: an HTTPS server's page (the host)
+        // loading a script from localhost is preflighted, and refused unless
+        // the preflight allows the private network. The host then reports only
+        // "Script load error". Newer Chrome also asks the user once, with a
+        // "look for and connect to devices on your local network" prompt.
+        'Access-Control-Allow-Private-Network': 'true',
       },
     },
   };

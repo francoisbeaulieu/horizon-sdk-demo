@@ -1,11 +1,11 @@
 # DatagridTemplate — data tables in your app
 
-`horizonContext.ui.templates.DatagridTemplate` is the table surface for extension
+`flowContext.ui.templates.DatagridTemplate` is the table surface for extension
 apps. It wraps the same grid Horizon's own pages use, so your table matches the
 host's look and behaviour without your app shipping MUI.
 
 Types: `DatagridTemplateProps`, `DatagridColumn`, `DatagridAction`,
-`DatagridToolbarConfig` — all exported from `@netsapiens/horizon-sdk`.
+`DatagridToolbarConfig` — all exported from `@netsapiens/flow-sdk`.
 
 > **Read [Page layout](#page-layout) first.** The most common cause of "my app
 > doesn't look native" is rebuilding search, rows-per-page, pagination, or the
@@ -99,10 +99,10 @@ chips, a live badge) use `headerStatus`, which accepts arbitrary JSX.
 ## Quick start
 
 ```tsx
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 export default function DevicesPage() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { DatagridTemplate } = ui?.templates ?? {};
   if (!DatagridTemplate) return null;
 
@@ -526,10 +526,10 @@ own `columnVisibilityVariant` so their saved choices don't overwrite each other:
 
 `DatagridTemplateProps` mirrors the host grid's prop surface. If you are on an
 older SDK release and a prop documented here is missing from the types, upgrade
-`@netsapiens/horizon-sdk` — the prop very likely already works at runtime and was
+`@netsapiens/flow-sdk` — the prop very likely already works at runtime and was
 simply not declared yet. Props added to the host grid appear in the package on its
 next release.
 
 This guide is published in two places, kept identical: here, and inside the
-installed package at `node_modules/@netsapiens/horizon-sdk/DATAGRID.md`. If they
+installed package at `node_modules/@netsapiens/flow-sdk/DATAGRID.md`. If they
 ever disagree, the copy in the package matches the version you have installed.

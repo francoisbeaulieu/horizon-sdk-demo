@@ -1,7 +1,7 @@
 /**
- * Showcase section: Avatar — and the demo's clearest use of `horizonContext.api`.
+ * Showcase section: Avatar — and the demo's clearest use of `flowContext.api`.
  *
- * The signed-in user's photo is not on the context. `HorizonUser` carries
+ * The signed-in user's photo is not on the context. `FlowUser` carries
  * displayName, domain, email, extension, scope, department and site, and the
  * platform holds the avatar behind an API call, so an app that wants the picture
  * fetches it — through its own audited proxy, with the fields it was already
@@ -9,7 +9,7 @@
  * `Avatar` component, and a real read against the NetSapiens v2 API.
  */
 import { useEffect, useState } from 'react';
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
@@ -41,7 +41,7 @@ function initialsOf(name: string): string {
 }
 
 export default function AvatarSection() {
-  const { api, ui, user } = useHorizonContext();
+  const { api, ui, user } = useFlowContext();
   const { Avatar, Box, Typography, Stack, Paper } = ui || {};
 
   const [photo, setPhoto] = useState<string | null>(null);
@@ -72,7 +72,7 @@ export default function AvatarSection() {
   if (!Paper || !Typography || !Stack || !Avatar || !Box) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         Avatar
       </Typography>
@@ -110,8 +110,7 @@ export default function AvatarSection() {
             The signed-in user
           </Typography>
           <Typography variant='caption' color='text.secondary'>
-            Fetched with <code>horizonContext.api</code>, falling back to
-            initials.
+            Fetched with <code>flowContext.api</code>, falling back to initials.
           </Typography>
           <Stack
             direction='row'
@@ -174,7 +173,7 @@ export default function AvatarSection() {
       </Stack>
 
       <SectionCode>
-        {`const { Avatar } = horizonContext.ui;
+        {`const { Avatar } = flowContext.ui;
 
 <Avatar>JD</Avatar>                        // initials
 <Avatar src={photoUrl} alt={name}>JD</Avatar>  // an image, initials as fallback
@@ -183,7 +182,7 @@ export default function AvatarSection() {
 // displayName, domain, email, extension, scope, department, site — so the
 // picture is a read against the platform, through YOUR api client, which
 // means the platform can attribute and rate-limit it like any other call.
-const { api, user } = useHorizonContext();
+const { api, user } = useFlowContext();
 const [photo, setPhoto] = useState(null);
 
 useEffect(() => {

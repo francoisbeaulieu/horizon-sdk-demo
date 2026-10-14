@@ -1,7 +1,7 @@
 import type {
   ExtensionComponentProps,
   TableFilterBarContext,
-} from '@netsapiens/horizon-sdk';
+} from '@netsapiens/flow-sdk';
 import React, { useState } from 'react';
 
 import { type ZoneMarkerProps } from '../integration/withZoneTestId';

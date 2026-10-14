@@ -1,6 +1,6 @@
 /** Showcase section: Tabs (the host's pill strip + the standard bar). */
 import { useState } from 'react';
-import { useHorizonContext } from '@netsapiens/horizon-sdk';
+import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
 
@@ -26,7 +26,7 @@ const PLAIN_TABS = [
 ];
 
 export default function TabsSection() {
-  const { ui } = useHorizonContext();
+  const { ui } = useFlowContext();
   const { Tabs, Box, Typography, Stack, Paper } = ui || {};
   const [panelTab, setPanelTab] = useState<string | number>('overview');
   const [pillTab, setPillTab] = useState<string | number>('all');
@@ -34,7 +34,7 @@ export default function TabsSection() {
   if (!Paper || !Typography || !Stack || !Box || !Tabs) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         Tabs
       </Typography>
@@ -49,7 +49,7 @@ export default function TabsSection() {
             With panels (icons + a disabled option)
           </Typography>
           <Tabs options={PANEL_TABS} value={panelTab} onChange={setPanelTab} />
-          <Paper variant='outlined' sx={{ p: 2, mt: 2 }}>
+          <Paper rounded variant='outlined' sx={{ p: 2, mt: 2 }}>
             <Typography variant='body2'>
               {PANEL_BODY[panelTab] ?? ''}
             </Typography>
@@ -91,7 +91,7 @@ export default function TabsSection() {
       </Stack>
 
       <SectionCode>
-        {`const { Tabs } = horizonContext.ui;
+        {`const { Tabs } = flowContext.ui;
 
 // Options-based, like Select and ToggleButtonGroup — the kit does not expose
 // the <Tab> children MUI would want. \`onChange\` receives the new value
