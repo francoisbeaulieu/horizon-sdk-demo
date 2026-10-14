@@ -155,9 +155,11 @@ module.exports = (_env, argv) => {
       // remote. webpack-dev-server ≥5.2 answers that (Sec-Fetch-Site: cross-site
       // + Sec-Fetch-Mode: no-cors) with 403 "Cross-Origin request blocked" unless
       // the Host is explicitly allowed; the CORS header below does not help, the
-      // guard runs first. Only `localhost` (not 'all'), so the DNS-rebinding Host
-      // check still holds for every other name.
-      allowedHosts: ['localhost'],
+      // guard runs first. List the loopback names only (not 'all'), so the
+      // DNS-rebinding Host check still holds for every other name. 127.0.0.1 is
+      // listed because this guard does not exempt IP addresses the way the
+      // ordinary Host check does: a build registered at 127.0.0.1 would get 403.
+      allowedHosts: ['localhost', '127.0.0.1'],
       // No live-reload client in the bundle. It would run inside the HOST page
       // and keep opening ws://localhost:5005/ws from there — noise in the host's
       // console that looks like the app opening its own sockets (it never does;

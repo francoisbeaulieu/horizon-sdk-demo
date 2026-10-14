@@ -142,7 +142,16 @@ const path = require('path');
 // injected into the bundle as `__MF_NAME__` for `useRemoteApp(...)` (so the two
 // can never drift), and it is the registration's `webpack_module`. The host/SDK
 // derive the kebab-case registry `id` from it (analyticsDashboard → analytics-dashboard).
-const MODULE_NAME = '<module-scope>';
+//
+// `MF_NAME` overrides it for a LOCAL run against a shared server, e.g.
+//   MF_NAME=<module-scope>Local npm run dev
+// That build is registered as its own app (`<app-id>-local`) beside the
+// published one, instead of pointing the published app at your localhost for
+// everyone. It must match that registration's `webpack_module` exactly.
+const MODULE_NAME = process.env.MF_NAME || '<module-scope>';
+if (!/^[A-Za-z_$][\w$]*$/.test(MODULE_NAME)) {
+  throw new Error(`MF_NAME must be a JavaScript identifier, got "${MODULE_NAME}"`);
+}
 
 module.exports = (_env, argv) => {
   const isProduction = argv.mode === 'production';
@@ -265,15 +274,23 @@ module.exports = (_env, argv) => {
   // a version is submitted, and a bundle that fails the probe cannot be verified.
   devServer: {
     port: <dev-port>,
-    headers: { 'Access-Control-Allow-Origin': '*' },
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      // REQUIRED for an HTTPS Horizon to load from localhost. Chrome's Private
+      // Network Access preflights that script load and refuses it unless the
+      // preflight allows the private network; Horizon then reports only
+      // "Script load error".
+      'Access-Control-Allow-Private-Network': 'true',
+    },
     // REQUIRED to load the dev server from Horizon. webpack-dev-server ≥5.2
     // answers a cross-site <script> load (Sec-Fetch-Site: cross-site +
     // Sec-Fetch-Mode: no-cors) with 403 "Cross-Origin request blocked" unless
     // the Host is explicitly allowed — and that is exactly how Horizon fetches a
     // dev remote. The CORS header above does not help: the guard runs first.
-    // List only `localhost` (not 'all') so the DNS-rebinding Host check still
-    // holds for every other name.
-    allowedHosts: ['localhost'],
+    // List only the loopback names (not 'all') so the DNS-rebinding Host check
+    // still holds for every other name. `127.0.0.1` must be listed explicitly:
+    // this guard does not exempt IP addresses the way the ordinary check does.
+    allowedHosts: ['localhost', '127.0.0.1'],
     // No live-reload client. Inside Horizon its socket comes from the portal's
     // origin, which the Host/Origin check above refuses ("Invalid Host/Origin
     // header"), so it floods the console with reconnect errors. Pointing it at
@@ -655,7 +672,10 @@ Your origin must be in the operator's **approved CDN origins** allowlist or the 
 You can run the app on your own machine and have Horizon load it straight from `localhost`, with no scan and no publishing — then it's just code and refresh. This needs Horizon (Flow) **46.0.0-staging.320** or newer and NS API v2 **46.0.0-alpha.598** or newer.
 
 1.  **Switch it on once per dev server.** A Super User adds an **API config** (not a UI config) under **Platform › API › API configs › Add API config**: name `NsUISDKDevRemotes`, value type boolean, value `true`, target your API server(s). It is for development servers, so it is not in the populated list.
-2.  **Run `npm run dev`** and check that `http://localhost:<dev-port>/remoteEntry.js` opens in your browser. The `devServer` block in `webpack.config.js` (`allowedHosts`, `client: false`) and `optimization.nodeEnv` are what make this work inside Horizon — keep them.
+2.  **Run `npm run dev`** and check that `http://localhost:<dev-port>/remoteEntry.js` opens in your browser. The `devServer` block in `webpack.config.js` (`allowedHosts`, `client: false`, the `Access-Control-Allow-Private-Network` header) and `optimization.nodeEnv` are what make this work inside Horizon — keep them.
+
+    On a server other people use, run it under its own name instead — `MF_NAME=<module-scope>Local npm run dev` — and use that name in step 3. Deploying a localhost URL to the published app points it at localhost for **everyone**: each of them then loads nothing.
+
 3.  **Register and deploy with the localhost URL.** Registering (above) with `remote_entry_url: http://localhost:<dev-port>/remoteEntry.js` is not enough by itself: the registration stays at `none`. Deploy it, with that same URL:
 
         curl -X POST "https://your-horizon.example.com/ns-api/v2/ui-extensions/registry/<app-id>/deploy" \
@@ -663,13 +683,15 @@ You can run the app on your own machine and have Horizon load it straight from `
           -H "Content-Type: application/json" \
           -d '{ "remote_entry_url": "http://localhost:<dev-port>/remoteEntry.js", "synchronous": "yes" }'
 
+    For a run under `MF_NAME`, register a separate app with `"webpack_module": "<module-scope>Local"` (its id is `<app-id>-local`) and deploy that id; the published app is untouched.
+
     It answers `"status": "dev"` with no findings, and **Registered Apps** shows it as a **Development build**. (Without the API config, the same call is `rejected` with `fetch-failed: host resolves to a private, reserved or link-local address` — the platform's own fetch refuses localhost.)
 
-4.  **Reload Horizon.** Chrome asks whether the site may access devices on your local network — allow it, or the bundle cannot be fetched.
+4.  **Reload Horizon** in Chrome or Edge. Chrome asks whether the site may access devices on your local network — allow it, or the bundle cannot be fetched. Newer Chrome keeps **loopback** (`localhost`) as its own permission, separate from the wider local network: if the load is still refused, open the site's settings, allow every local-network/loopback entry (or **Reset permissions** and reload to be asked again). As a last resort on a development machine, `chrome://flags/#local-network-access-check` → **Disabled** turns the check off browser-wide; switch it back afterwards. Safari cannot load a development build: it blocks an `http://` script on an `https://` page, localhost included.
 
 A development build is fetched by **each viewer's own browser from its own `localhost`**, so it only renders for someone running the dev server on that machine; everyone else gets a console load error. Development builds load only from `localhost` / `127.0.0.1` URLs. When you are done, deploy a real build from your CDN URL, which runs the full verification.
 
-If the app is listed but does not render, the console tells you which piece is missing: a `403` on `remoteEntry.js` is the dev server's cross-site guard (`allowedHosts`); "dispatcher.getOwner is not a function" is the development JSX runtime (`optimization.nodeEnv`); repeated "Invalid Host/Origin header" or `/ws` reconnect errors are the live-reload client (`client: false`). After a masquerade, Horizon does not reload remote apps: reload the page before testing as the masqueraded user.
+If the app is listed but does not render, the console tells you which piece is missing: a `403` on `remoteEntry.js` is the dev server's cross-site guard (`allowedHosts`); "Script load error" with no response at all is Chrome's local-network check — the `Access-Control-Allow-Private-Network` header, or a denied local-network/loopback permission (step 4); "dispatcher.getOwner is not a function" is the development JSX runtime (`optimization.nodeEnv`); repeated "Invalid Host/Origin header" or `/ws` reconnect errors are the live-reload client (`client: false`). After a masquerade, Horizon does not reload remote apps: reload the page before testing as the masqueraded user.
 
 ## Build for production
 
@@ -1299,7 +1321,7 @@ host UI kit finds out what it is missing.
 
 - Replace **all** placeholders before writing files: `<app-id>`, `<display-name>`, `<module-scope>`, `<dev-port>`, `<author>`.
 - **Keep `KIT-GAPS.md` up to date as you build — this is a running log, not a scaffold-time file.** The kit is deliberately smaller than MUI, so sooner or later you will want a component it does not have. Whenever that happens, do not just work around it silently: append an entry recording what you reached for, what you used instead (with the file path), what it cost, and the component shape that would have fit. You are the only observer who has that reasoning while it is still live — a developer reading the finished code months later cannot reconstruct why a `ToggleButtonGroup` is pretending to be a tab strip. This file is the sole mechanism by which the host UI kit learns what it is missing, so an unrecorded workaround is a gap nobody ever hears about. If you finish with no gaps, leave the file with its commented-out template; an empty log is a real signal too.
-- **The federation name is single-sourced.** `<module-scope>` (camelCase) is now hardcoded in exactly one place — `MODULE_NAME` in `webpack.config.js` — and flows into the app via `DefinePlugin` (`__MF_NAME__`), which `useRemoteApp(horizonContext, __MF_NAME__)` consumes. Do **not** also hardcode the module name in `App.tsx`. `<module-scope>` must be a valid JS identifier (camelCase, no dashes); the SDK/host derive the kebab `<app-id>` from it, which is what you use for route ids/paths (`<app-id>.main`, `/apps/<app-id>`) and the registration's `capabilities.routes`.
+- **The federation name is single-sourced.** `<module-scope>` (camelCase) is now hardcoded in exactly one place — `MODULE_NAME` in `webpack.config.js`, which `MF_NAME` overrides for a local run — and flows into the app via `DefinePlugin` (`__MF_NAME__`), which `useRemoteApp(horizonContext, __MF_NAME__)` consumes. Do **not** also hardcode the module name in `App.tsx`. `<module-scope>` must be a valid JS identifier (camelCase, no dashes); the SDK/host derive the kebab `<app-id>` from it, which is what you use for route ids/paths (`<app-id>.main`, `/apps/<app-id>`) and the registration's `capabilities.routes`.
 - Don't pull in MUI as a direct dependency — every UI component comes from `horizonContext.ui`. They're wrapped in the host MUI `ThemeProvider`, so they re-theme on a live dark/light toggle for free — which is exactly why hand-rolled markup colored from raw tokens drifts out of sync.
 - **RULE 1 is the one to re-read before writing any JSX — see the top of this skill, and "What's in the kit".** Every visible element comes from `ui.*` / `ui.templates.*`; colours go in `sx` as palette paths. Never paint from `ui.theme.colors` or `ui.styles` — they are per-mode snapshots, so hand-rolled markup silently stops following the dark/light toggle, and `getThemeTokens`/`getUIStyles` are host-internal so you cannot recompute fresh ones. `useTheme() → { theme }` is the only reactive mode signal, and it is for _picking_ a value you own. In standalone extensions (outside the provider) call `useTheme(context.eventBus, context.theme)`. Full mechanism in "Theming & dark/light mode".
 - **Keep the `contextRef` in `App.tsx`.** The memoized page wrapper must read `contextRef.current`, not close over `horizonContext`. Closing over it pins `ui` to the colour mode active at first paint while `theme` keeps updating — the most common theming bug in a Horizon remote, and invisible until someone toggles dark mode.
