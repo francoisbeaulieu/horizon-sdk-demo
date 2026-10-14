@@ -10,7 +10,7 @@ export default function ZonesPanel() {
   if (!Paper || !Stack || !Typography) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h6'>Extension zones used by this demo</Typography>
       <Typography
         variant='body2'
@@ -27,6 +27,7 @@ export default function ZonesPanel() {
       <Stack spacing={2}>
         {ZONES.map((z, i) => (
           <Paper
+            rounded
             key={z.zone}
             variant='outlined'
             sx={{

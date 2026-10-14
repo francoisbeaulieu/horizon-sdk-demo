@@ -23,7 +23,7 @@ export default function SidePanelSection() {
     return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         SidePanel
       </Typography>

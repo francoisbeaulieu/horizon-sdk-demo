@@ -13,6 +13,7 @@ export function CodeBlock({ children }: { children: string }) {
 
   return (
     <Paper
+      rounded
       variant='outlined'
       sx={{
         p: 2,

@@ -10,7 +10,7 @@ export default function ListSection() {
   if (!Paper || !Typography || !List || !ListItem || !ListItemText) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         List &amp; Code
       </Typography>

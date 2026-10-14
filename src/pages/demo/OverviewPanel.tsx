@@ -11,7 +11,7 @@ export default function OverviewPanel() {
 
   return (
     <Stack spacing={3}>
-      <Paper>
+      <Paper rounded>
         <Typography variant='h6' gutterBottom>
           What the Horizon SDK does
         </Typography>
@@ -25,7 +25,7 @@ export default function OverviewPanel() {
         </Typography>
       </Paper>
 
-      <Paper>
+      <Paper rounded>
         <Typography variant='h6' gutterBottom>
           Capabilities
         </Typography>
@@ -39,6 +39,7 @@ export default function OverviewPanel() {
         >
           {CAPABILITIES.map((c, i) => (
             <Paper
+              rounded
               key={c.title}
               variant='outlined'
               sx={{

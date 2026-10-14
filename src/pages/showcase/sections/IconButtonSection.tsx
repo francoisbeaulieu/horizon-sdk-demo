@@ -12,7 +12,7 @@ export default function IconButtonSection() {
   if (!Paper || !Typography || !Stack || !IconButton) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         IconButton
       </Typography>

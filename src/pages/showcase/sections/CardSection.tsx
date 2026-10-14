@@ -1,4 +1,4 @@
-/** Showcase section: Card, CardContent, Divider and Icon. */
+/** Showcase section: Card, CardContent, Icon, and `rounded` on Card and Paper. */
 import { useFlowContext } from '@netsapiens/flow-sdk';
 
 import { SectionCode } from '../SectionCode';
@@ -19,13 +19,19 @@ export default function CardSection() {
     return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         Card &amp; Icon
       </Typography>
-      <Typography variant='body2' color='text.secondary' sx={{ mb: 3 }}>
+      <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
         A themed surface that becomes a single activatable control when you give
         it <code>onClick</code>, and any Iconify glyph by name.
+      </Typography>
+      <Typography variant='body2' color='text.secondary' sx={{ mb: 3 }}>
+        <code>Card</code> and <code>Paper</code> are square by default, like
+        Flow&apos;s own panels. Pass <code>rounded</code> for rounded corners in
+        the host&apos;s radius — every card on this demo&apos;s pages does.
+        Dashboard cards stay square.
       </Typography>
 
       <Box
@@ -36,7 +42,11 @@ export default function CardSection() {
         }}
       >
         {CARDS.map((c, i) => (
-          <Card key={c.title} {...(i === 1 ? { onClick: () => {} } : {})}>
+          <Card
+            rounded
+            key={c.title}
+            {...(i === 1 ? { onClick: () => {} } : {})}
+          >
             <CardContent>
               <Stack direction='row' spacing={1.5} alignItems='center'>
                 {Icon ? (
@@ -58,11 +68,15 @@ export default function CardSection() {
       </Box>
 
       <SectionCode>
-        {`const { Card, CardContent, Icon } = flowContext.ui;
+        {`const { Card, CardContent, Icon, Paper } = flowContext.ui;
+
+// Square by default, like the platform's panels. \`rounded\` applies the
+// host's radius, so there is no number to write. An sx radius still wins.
+<Paper rounded>…</Paper>
 
 // Passing onClick makes the host render a CardActionArea internally, so the
 // focus ring, hover state and keyboard activation come for free.
-<Card onClick={() => open(row)}>
+<Card rounded onClick={() => open(row)}>
   <CardContent>
     <Icon icon="mdi:rocket-launch" sx={{ fontSize: 24, color: 'primary.main' }} />
     <Typography variant="subtitle2">Clickable card</Typography>

@@ -40,7 +40,7 @@ export default function ActivityListSection() {
   if (!Paper || !Typography || !Stack || !ActivityList) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         ActivityList
       </Typography>

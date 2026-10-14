@@ -41,7 +41,7 @@ export default function IntroSection() {
   if (!Paper || !Typography || !Box || !Stack) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Stack direction='row' spacing={1} alignItems='center' sx={{ mb: 1 }}>
         <Typography variant='h4'>The Horizon component kit</Typography>
         {Chip ? (

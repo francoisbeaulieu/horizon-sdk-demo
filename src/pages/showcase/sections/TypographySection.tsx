@@ -38,7 +38,7 @@ export default function TypographySection() {
   if (!Paper || !Typography || !Stack || !Box) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         Typography &amp; localization
       </Typography>

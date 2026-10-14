@@ -12,7 +12,7 @@ export default function LayoutSection() {
   if (!Paper || !Typography || !Stack || !Box) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         Stack & Divider
       </Typography>
@@ -26,7 +26,7 @@ export default function LayoutSection() {
           <Typography variant='subtitle2' gutterBottom>
             Horizontal Stack (direction="row")
           </Typography>
-          <Paper variant='outlined' sx={{ p: 2 }}>
+          <Paper rounded variant='outlined' sx={{ p: 2 }}>
             <Stack direction='row' spacing={2} alignItems='center'>
               {Avatar && <Avatar>JD</Avatar>}
               <Typography>John Doe</Typography>
@@ -47,7 +47,7 @@ export default function LayoutSection() {
           <Typography variant='subtitle2' gutterBottom>
             Vertical Stack (default — no direction needed)
           </Typography>
-          <Paper variant='outlined' sx={{ p: 2 }}>
+          <Paper rounded variant='outlined' sx={{ p: 2 }}>
             <Stack spacing={1.5}>
               <Typography variant='body2'>Item 1</Typography>
               <Typography variant='body2'>Item 2</Typography>
@@ -60,7 +60,7 @@ export default function LayoutSection() {
           <Typography variant='subtitle2' gutterBottom>
             Divider Examples
           </Typography>
-          <Paper variant='outlined' sx={{ p: 2 }}>
+          <Paper rounded variant='outlined' sx={{ p: 2 }}>
             <Stack spacing={2}>
               <Typography variant='body2'>Content above divider</Typography>
               {Divider && <Divider />}

@@ -41,7 +41,7 @@ export default function ButtonsSection() {
   );
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         Buttons
       </Typography>

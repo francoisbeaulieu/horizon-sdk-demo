@@ -34,7 +34,7 @@ export default function TabsSection() {
   if (!Paper || !Typography || !Stack || !Box || !Tabs) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         Tabs
       </Typography>
@@ -49,7 +49,7 @@ export default function TabsSection() {
             With panels (icons + a disabled option)
           </Typography>
           <Tabs options={PANEL_TABS} value={panelTab} onChange={setPanelTab} />
-          <Paper variant='outlined' sx={{ p: 2, mt: 2 }}>
+          <Paper rounded variant='outlined' sx={{ p: 2, mt: 2 }}>
             <Typography variant='body2'>
               {PANEL_BODY[panelTab] ?? ''}
             </Typography>

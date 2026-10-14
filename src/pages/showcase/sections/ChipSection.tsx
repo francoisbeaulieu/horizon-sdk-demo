@@ -43,7 +43,7 @@ export default function ChipSection() {
   if (!Paper || !Typography || !Stack || !Chip || !Box) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         Chip
       </Typography>

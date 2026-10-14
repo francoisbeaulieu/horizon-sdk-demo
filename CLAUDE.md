@@ -122,6 +122,10 @@ Then `npm run typecheck && npm run lint && npm run format && npm run build`.
 - Page components destructure the kit and guard before rendering (`if (!Paper ||
 !Typography) return null`) — see `src/pages/showcase/sections/` for the house
   pattern to copy.
+- **Page cards are `rounded`.** Every `Paper` and `Card` the demo draws on its
+  own pages takes `rounded` (SDK 0.3.2), so a page's cards read the same. Not
+  in `src/widgets/` or `src/extensions/`: those sit inside host surfaces —
+  dashboard cards and host panels — which are square.
 - Panels inside a page read the live context themselves via
   `useFlowContext()`. Do not prop-drill `ui` / `theme` / `styles` down —
   drilling is how a stale snapshot spreads.

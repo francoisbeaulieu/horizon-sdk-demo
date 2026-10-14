@@ -23,7 +23,7 @@ export default function SearchFieldSection() {
   if (!Paper || !Typography || !Stack || !SearchField) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         SearchField &amp; Autocomplete
       </Typography>

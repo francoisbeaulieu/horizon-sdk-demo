@@ -14,7 +14,7 @@ export default function SwitchSection() {
   if (!Paper || !Typography || !Stack || !Switch) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         Switch
       </Typography>

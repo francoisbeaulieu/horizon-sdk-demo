@@ -441,10 +441,11 @@ export default function MainPage() {
       ]}
     >
       <Stack spacing={3}>
-        {/* No `sx` — `Paper` arrives outlined with 24px of padding. Reach for
-            `sx` only to depart from that; it merges as an array, so an override
+        {/* No `sx` — `Paper` arrives as the platform's surface with 24px of
+            padding. `rounded` asks for the host's corner radius. Reach for `sx`
+            only to depart from that; it merges as an array, so an override
             wins per-property and leaves the other defaults alone. */}
-        <Paper>
+        <Paper rounded>
           <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
             <Typography variant="h6">Welcome, {user.displayName}</Typography>
             {/* Re-labels on every toggle — proof the theme signal is reactive. */}
@@ -452,7 +453,7 @@ export default function MainPage() {
           </Stack>
           <Typography variant="body2">Domain: {user.domain}</Typography>
         </Paper>
-        <Paper>
+        <Paper rounded>
           <Stack direction="row" spacing={2} alignItems="center">
             <Button onClick={() => setCount(count - 1)}>−</Button>
             {/* A monospace readout without hand-rolling one. `Code inline` is a
@@ -823,6 +824,14 @@ and `sx`/`variant` are for departing from the default, not assembling it: `Paper
 `Chip` (soft, neutral, small), `Tabs` (`'pill'`), `Stack` (`direction='column'`).
 `sx` merges as an array, so an override wins per-property and leaves the rest
 intact.
+
+**Corners** _(0.3.2)_: `Paper` and `Card` are square by default, like the
+platform's own panels. Pass `rounded` for rounded corners — the radius is the
+host's, so never write `sx={{ borderRadius: … }}` to get it. Round all of a
+page's cards or none. Dashboard cards and `WidgetCard` are always square and do
+not take it; never wrap a widget in a rounded `Paper` to round it (that is a card
+inside a card). `variant='outlined'` also rounds, but swaps the outline for a
+border — use `rounded` for the corners alone.
 
 ⚠️ **The default is the theme's, not the kit's.** `Paper`, `Card` and `Chip` used
 to have a `variant` pinned by the SDK wrapper; that was removed in 0.2.11 because

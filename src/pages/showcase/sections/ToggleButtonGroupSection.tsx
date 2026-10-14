@@ -14,7 +14,7 @@ export default function ToggleButtonGroupSection() {
     return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         ToggleButtonGroup
       </Typography>

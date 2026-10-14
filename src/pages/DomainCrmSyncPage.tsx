@@ -200,7 +200,7 @@ export default function DomainCrmSyncPage({ ...marker }: ZoneMarkerProps) {
           this pane and see that the page followed the domain they picked
           without the app ever naming it.
         */}
-        <Paper sx={{ p: 3 }}>
+        <Paper rounded sx={{ p: 3 }}>
           <Stack spacing={1}>
             <Typography variant='h6'>Domain being managed</Typography>
             <Stack direction='row' spacing={1} alignItems='center'>
@@ -233,7 +233,7 @@ export default function DomainCrmSyncPage({ ...marker }: ZoneMarkerProps) {
           </Alert>
         ) : null}
 
-        <Paper sx={{ p: 3 }}>
+        <Paper rounded sx={{ p: 3 }}>
           <Stack spacing={2}>
             <Stack
               direction='row'

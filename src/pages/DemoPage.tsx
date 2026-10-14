@@ -71,6 +71,7 @@ export default function DemoPage({ ...marker }: ZoneMarkerProps) {
     >
       {/* SDK version badge — host components throughout, accent from the live palette. */}
       <Paper
+        rounded
         variant='outlined'
         sx={{
           p: 2,

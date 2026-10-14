@@ -72,7 +72,7 @@ export default function AvatarSection() {
   if (!Paper || !Typography || !Stack || !Avatar || !Box) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         Avatar
       </Typography>

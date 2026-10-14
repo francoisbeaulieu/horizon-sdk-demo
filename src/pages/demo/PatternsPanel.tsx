@@ -11,7 +11,7 @@ export default function PatternsPanel() {
   if (!Paper || !Box || !Typography) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h6' gutterBottom>
         Route pattern matching
       </Typography>
@@ -24,7 +24,7 @@ export default function PatternsPanel() {
       {/* The kit exposes no Table primitives, so the table ELEMENTS come from
           the host `Box` via `component` — real <table> semantics, with every
           color resolved from the live palette through `sx`. */}
-      <Paper background={1} sx={{ overflowX: 'auto' }}>
+      <Paper rounded background={1} sx={{ overflowX: 'auto' }}>
         <Box
           component='table'
           sx={{ width: '100%', borderCollapse: 'collapse' }}

@@ -50,7 +50,7 @@ export default function TemplatesSection() {
   if (!Paper || !Typography || !Stack || !Box) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         {t?.('TEMPLATES') ?? 'Templates'}
       </Typography>

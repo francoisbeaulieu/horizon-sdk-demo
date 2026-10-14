@@ -14,7 +14,7 @@ export default function TooltipSection() {
     return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         Tooltip
       </Typography>

@@ -68,7 +68,12 @@ export default function CarouselSection() {
   if (!Paper || !Typography || !Stack || !Box || !CarouselTemplate) return null;
 
   const slide = (item: (typeof FEATURED)[number]) => (
-    <Paper key={item.name} variant='outlined' sx={{ p: 2, height: '100%' }}>
+    <Paper
+      rounded
+      key={item.name}
+      variant='outlined'
+      sx={{ p: 2, height: '100%' }}
+    >
       <Stack spacing={1}>
         {Icon ? <Icon name={item.icon} size={24} /> : null}
         <Typography variant='subtitle2' fontWeight={600}>
@@ -82,7 +87,7 @@ export default function CarouselSection() {
   );
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         CarouselTemplate
       </Typography>

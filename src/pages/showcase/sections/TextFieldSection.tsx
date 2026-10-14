@@ -14,7 +14,7 @@ export default function TextFieldSection() {
   if (!Paper || !Typography || !Stack || !TextField) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         TextField
       </Typography>

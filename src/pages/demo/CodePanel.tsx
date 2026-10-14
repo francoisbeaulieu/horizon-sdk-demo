@@ -10,7 +10,7 @@ export default function CodePanel() {
   if (!Paper || !Stack || !Typography) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h6' sx={{ mb: 3 }}>
         How this demo registers
       </Typography>

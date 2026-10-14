@@ -14,7 +14,7 @@ export default function CheckboxSection() {
   if (!Paper || !Typography || !Stack || !Checkbox) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         Checkbox
       </Typography>

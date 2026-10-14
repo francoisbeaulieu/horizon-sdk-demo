@@ -33,7 +33,7 @@ export default function StatBlockSection() {
   if (!Paper || !Typography || !Stack || !StatBlock || !Box) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         StatBlock &amp; Donut
       </Typography>

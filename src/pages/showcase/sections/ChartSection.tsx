@@ -26,7 +26,7 @@ export default function ChartSection() {
   if (!Paper || !Typography || !Stack || !Chart || !Box) return null;
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         Chart
       </Typography>

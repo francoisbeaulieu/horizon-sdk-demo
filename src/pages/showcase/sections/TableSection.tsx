@@ -33,7 +33,7 @@ export default function TableSection() {
   }
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h5' gutterBottom>
         Table
       </Typography>

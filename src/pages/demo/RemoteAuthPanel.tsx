@@ -175,7 +175,7 @@ export default function RemoteAuthPanel() {
   const chip = STATUS_CHIP[status];
 
   return (
-    <Paper>
+    <Paper rounded>
       <Typography variant='h6' gutterBottom>
         Remote authentication
       </Typography>
@@ -188,7 +188,7 @@ export default function RemoteAuthPanel() {
       </Typography>
 
       {/* Live demo */}
-      <Paper background={1} sx={{ mb: 3 }}>
+      <Paper rounded background={1} sx={{ mb: 3 }}>
         <Typography variant='subtitle2' fontWeight={600} gutterBottom>
           Try it
         </Typography>
