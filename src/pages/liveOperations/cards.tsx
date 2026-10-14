@@ -6,6 +6,7 @@
 import type {
   ActivityRow,
   CallActivity,
+  CallRecord,
   DashboardTemplateWidgetProps,
   FlowNotification,
   StreamStatus,
@@ -367,6 +368,257 @@ export function CallsCard() {
             ))}
           </TableBody>
         </Table>
+      )}
+    </CardBody>
+  );
+}
+
+// ── Call records ─────────────────────────────────────────────────────────────
+
+const DIRECTION: Record<string, { label: string; tone: Tone }> = {
+  inbound: { label: 'Inbound', tone: 'info' },
+  outbound: { label: 'Outbound', tone: 'primary' },
+  missed: { label: 'Missed', tone: 'error' },
+  internal: { label: 'Internal', tone: 'neutral' },
+};
+
+function direction(r: CallRecord) {
+  return (
+    (r.direction && DIRECTION[r.direction]) || {
+      label: 'Not routed',
+      tone: 'neutral' as Tone,
+    }
+  );
+}
+
+/** `recordingStatus` is the platform's code: 0 none, 2 available, 3 transcribed. */
+function recording(r: CallRecord): { label: string; tone: Tone } {
+  switch (r.recordingStatus) {
+    case 0:
+      return { label: 'None', tone: 'neutral' };
+    case 2:
+      return { label: 'Available', tone: 'success' };
+    case 3:
+      return { label: 'Transcribed', tone: 'success' };
+    default:
+      return { label: 'Processing', tone: 'warning' };
+  }
+}
+
+function mos(r: CallRecord): string {
+  const { orig, term } = r.mos;
+  if (orig == null && term == null) return '—';
+  const f = (v: number | null) => (v == null ? '—' : v.toFixed(2));
+  return `${f(orig)} / ${f(term)}`;
+}
+
+export function RecordsStat() {
+  const { ui } = useFlowContext();
+  const { records, recordStatus } = useLive();
+  const StatBlock = ui?.StatBlock;
+  if (!StatBlock) return null;
+  if (isBlocked(recordStatus))
+    return (
+      <StatBlock value='—' caption='Not available to you' tone='neutral' />
+    );
+  const missed = records.filter((r) => r.direction === 'missed').length;
+  return (
+    <StatBlock
+      value={records.length}
+      caption={missed ? `${missed} missed` : 'since this page opened'}
+      tone={missed ? 'warning' : 'primary'}
+    />
+  );
+}
+
+export function RecordUpdatesStat() {
+  const { ui } = useFlowContext();
+  const { recordDeliveries, recordStatus } = useLive();
+  const StatBlock = ui?.StatBlock;
+  if (!StatBlock) return null;
+  if (isBlocked(recordStatus))
+    return (
+      <StatBlock value='—' caption='Not available to you' tone='neutral' />
+    );
+  const updates = recordDeliveries.filter((d) => d.kind === 'updated').length;
+  return (
+    <StatBlock
+      value={updates}
+      caption='records changed after the call'
+      tone='info'
+    />
+  );
+}
+
+export function DispositionedStat() {
+  const { ui } = useFlowContext();
+  const { records, recordStatus } = useLive();
+  const StatBlock = ui?.StatBlock;
+  if (!StatBlock) return null;
+  if (isBlocked(recordStatus))
+    return (
+      <StatBlock value='—' caption='Not available to you' tone='neutral' />
+    );
+  const done = records.filter((r) => r.disposition).length;
+  return (
+    <StatBlock
+      value={done}
+      caption={`of ${records.length} with a disposition`}
+      tone={records.length && done === records.length ? 'success' : 'neutral'}
+    />
+  );
+}
+
+export function CallRecordsCard() {
+  const { ui } = useFlowContext();
+  const { records, recordStatus } = useLive();
+  const {
+    Table,
+    TableHead,
+    TableBody,
+    TableRow,
+    TableCell,
+    Chip,
+    Tooltip,
+    Typography,
+  } = ui ?? {};
+  if (
+    !Table ||
+    !TableHead ||
+    !TableBody ||
+    !TableRow ||
+    !TableCell ||
+    !Chip ||
+    !Tooltip ||
+    !Typography
+  ) {
+    return null;
+  }
+  return (
+    <CardBody
+      status={recordStatus}
+      call='cdrs.onDomain({ completed, updated })'
+    >
+      {records.length === 0 ? (
+        <Empty
+          icon='mdi:phone-log'
+          title='No calls have ended yet'
+          description='A record appears when a call ends, and updates as its recording, call quality and disposition land.'
+        />
+      ) : (
+        <Table size='small'>
+          <TableHead>
+            <TableRow>
+              <TableCell>Ended</TableCell>
+              <TableCell>Direction</TableCell>
+              <TableCell>From</TableCell>
+              <TableCell>To</TableCell>
+              <TableCell align='right'>Duration</TableCell>
+              <TableCell>Disposition</TableCell>
+              <TableCell>Recording</TableCell>
+              <TableCell align='right'>MOS</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {records.map((r) => {
+              const dir = direction(r);
+              const rec = recording(r);
+              return (
+                <TableRow key={r.recordId}>
+                  <TableCell>
+                    <Tooltip title={r.releaseText ?? r.recordId}>
+                      <Typography variant='body2'>
+                        {timeOf(r.endedAt)}
+                      </Typography>
+                    </Tooltip>
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      size='small'
+                      variant='outlined'
+                      label={dir.label}
+                      color={chipColor(dir.tone)}
+                    />
+                  </TableCell>
+                  <TableCell>{party(r.from)}</TableCell>
+                  <TableCell>
+                    {party(r.to)}
+                    {r.through
+                      ? ` via ${r.through.name || r.through.user}`
+                      : ''}
+                  </TableCell>
+                  <TableCell align='right'>
+                    {fmtSeconds(r.durationSec)}
+                  </TableCell>
+                  <TableCell>
+                    {r.disposition ? (
+                      <Tooltip
+                        title={[r.reason, r.notes].filter(Boolean).join(' — ')}
+                      >
+                        <Typography variant='body2'>{r.disposition}</Typography>
+                      </Tooltip>
+                    ) : (
+                      '—'
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      size='small'
+                      variant='outlined'
+                      label={rec.label}
+                      color={chipColor(rec.tone)}
+                    />
+                  </TableCell>
+                  <TableCell align='right'>{mos(r)}</TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      )}
+    </CardBody>
+  );
+}
+
+/**
+ * Every delivery as it arrives, so a record's later updates are visible: the
+ * call ends (`completed`), then the recording, call quality, summary and
+ * disposition land one by one (`updated`).
+ */
+export function RecordDeliveriesCard({ widget }: DashboardTemplateWidgetProps) {
+  const { ui } = useFlowContext();
+  const { recordDeliveries, recordStatus } = useLive();
+  const ActivityList = ui?.ActivityList;
+  if (!ActivityList) return null;
+  const rows: ActivityRow[] = recordDeliveries.map((d) => ({
+    id: d.id,
+    primary: `${party(d.record.from)} → ${party(d.record.to)}`,
+    secondary:
+      d.kind === 'completed'
+        ? 'Call ended'
+        : d.changed.length
+          ? `Updated: ${d.changed.join(', ')}`
+          : 'Updated',
+    meta: new Date(d.receivedAt).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    }),
+    tone: d.kind === 'completed' ? 'primary' : 'success',
+  }));
+  return (
+    <CardBody
+      status={recordStatus}
+      call='cdrs.onDomain({ completed, updated })'
+    >
+      {rows.length === 0 ? (
+        <Empty
+          icon='mdi:history'
+          title='Nothing received yet'
+          description='End a call, then save a disposition on it, to see both deliveries.'
+        />
+      ) : (
+        <ActivityList rows={rows} width={widget.pixel.width} />
       )}
     </CardBody>
   );

@@ -1,6 +1,7 @@
 import type {
   AgentStatus,
   CallActivity,
+  CallRecord,
   DeviceUpdate,
   FlowNotification,
   PresenceChange,
@@ -12,7 +13,7 @@ import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useStream } from '@netsapiens/flow-sdk';
 
-import type { LiveState, Sample } from './liveContext';
+import type { LiveState, RecordDelivery, Sample } from './liveContext';
 import {
   agentKey,
   HISTORY_POINTS,
@@ -28,7 +29,7 @@ import {
  * subscribing inside a card would open and close a feed each time. Opening them
  * here also keeps the trend history running while another tab is showing.
  *
- * Seven feeds, each with `useStream` (subscribes on mount, closes on unmount,
+ * Eight feeds, each with `useStream` (subscribes on mount, closes on unmount,
  * returns the status):
  *
  *   queues.onDomainQueues({ stats })                         → queues
@@ -38,6 +39,7 @@ import {
  *   devices.onDomain(update)                                 → phones
  *   notifications.onNotification(update)                     → notifications
  *   subscribers.onDomain(update)                             → user record changes
+ *   cdrs.onDomain({ completed, updated })                    → call records
  *
  * The queue drill-down opens an eighth, `queues.onQueue`, only while its panel
  * is open — see QueuePanel.tsx.
@@ -53,6 +55,33 @@ function without<T>(map: Map<string, T>, key: string): Map<string, T> {
   const next = new Map(map);
   next.delete(key);
   return next;
+}
+
+/** Keep this many records and deliveries; the page is a live view, not a log. */
+const RECORDS_KEPT = 50;
+
+/**
+ * The fields filled in after a call. A record arrives on `completed` with them
+ * empty and again on `updated` as each one lands.
+ */
+const LATE_FIELDS: [string, (r: CallRecord) => unknown][] = [
+  ['disposition', (r) => r.disposition],
+  ['reason', (r) => r.reason],
+  ['notes', (r) => r.notes],
+  ['recording', (r) => r.recordingStatus],
+  ['MOS (orig)', (r) => r.mos.orig],
+  ['MOS (term)', (r) => r.mos.term],
+  ['summary', (r) => r.summary],
+];
+
+function changedFields(
+  before: CallRecord | undefined,
+  after: CallRecord,
+): string[] {
+  if (!before) return [];
+  return LATE_FIELDS.filter(([, read]) => read(before) !== read(after)).map(
+    ([name]) => name,
+  );
 }
 
 /** Totals the headline numbers and the trend history are made of. */
@@ -160,6 +189,47 @@ export function LiveProvider({
     [],
   );
 
+  // Domain admins only; everyone else is refused with the host's message. The previous version of each record is
+  // kept in a ref so a delivery can say what changed.
+  const lastRecord = useRef(new Map<string, CallRecord>());
+  const [records, setRecords] = useState(new Map<string, CallRecord>());
+  const [recordDeliveries, setRecordDeliveries] = useState<RecordDelivery[]>(
+    [],
+  );
+  const recordStatus = useStream(
+    sdk,
+    (streams) => {
+      const receive = (kind: RecordDelivery['kind'], record: CallRecord) => {
+        const changed = changedFields(
+          lastRecord.current.get(record.recordId),
+          record,
+        );
+        lastRecord.current.set(record.recordId, record);
+        if (lastRecord.current.size > RECORDS_KEPT * 4) {
+          lastRecord.current.delete(lastRecord.current.keys().next().value!);
+        }
+        setRecords((m) => upsert(m, record.recordId, record));
+        setRecordDeliveries((list) =>
+          [
+            {
+              id: `${record.recordId}-${Date.now()}-${list.length}`,
+              kind,
+              record,
+              changed,
+              receivedAt: Date.now(),
+            },
+            ...list,
+          ].slice(0, RECORDS_KEPT),
+        );
+      };
+      return streams.cdrs.onDomain({
+        completed: (r) => receive('completed', r),
+        updated: (r) => receive('updated', r),
+      });
+    },
+    [],
+  );
+
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
@@ -226,6 +296,11 @@ export function LiveProvider({
     notificationStatus,
     userChanges,
     userStatus,
+    records: [...records.values()]
+      .sort((a, b) => b.endedAt.localeCompare(a.endedAt))
+      .slice(0, RECORDS_KEPT),
+    recordDeliveries,
+    recordStatus,
     history,
     now,
     nameOf,

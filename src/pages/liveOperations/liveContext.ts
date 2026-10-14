@@ -5,6 +5,7 @@
 import type {
   AgentStatus,
   CallActivity,
+  CallRecord,
   DeviceUpdate,
   FlowNotification,
   PresenceChange,
@@ -25,6 +26,17 @@ export interface Sample {
   available: number;
 }
 
+/** One delivery from `cdrs.onDomain`: the record as sent, and what changed. */
+export interface RecordDelivery {
+  /** Unique per delivery; a record is delivered more than once. */
+  id: string;
+  kind: 'completed' | 'updated';
+  record: CallRecord;
+  /** Fields that differ from the version delivered before; empty on `completed`. */
+  changed: string[];
+  receivedAt: number;
+}
+
 export interface LiveState {
   sdk: RemoteAppSDK;
   queues: QueueStats[];
@@ -42,6 +54,11 @@ export interface LiveState {
   /** Most recent first. */
   userChanges: SubscriberUpdate[];
   userStatus: StreamStatus;
+  /** Latest version of each call record, most recently ended first. */
+  records: CallRecord[];
+  /** Every delivery, newest first, so updates are visible as they land. */
+  recordDeliveries: RecordDelivery[];
+  recordStatus: StreamStatus;
   /** Oldest first, at most HISTORY_POINTS. */
   history: Sample[];
   /** A one-second clock, so durations count between frames. */

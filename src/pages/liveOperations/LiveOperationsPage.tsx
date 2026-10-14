@@ -13,14 +13,19 @@ import {
   AgentsCard,
   AgentsFreeStat,
   AvailableStat,
+  CallRecordsCard,
   CallsCard,
   CallsStat,
+  DispositionedStat,
   NotificationsCard,
   PhonesCard,
   PhonesStat,
   PresenceListCard,
   PresenceSummaryCard,
   QueuesCard,
+  RecordDeliveriesCard,
+  RecordsStat,
+  RecordUpdatesStat,
   UserChangesCard,
   WaitingStat,
 } from './cards';
@@ -42,6 +47,8 @@ import { QueuePanel } from './QueuePanel';
  *             agents
  *   People    presence Donut and list, user record changes
  *   Phones    device registration
+ *   Call records  finished calls (`cdrs.onDomain`), and each record's later updates
+ *                 as its recording, call quality and disposition land
  *
  * Every feed is opened once by `LiveProvider` (liveState.tsx), above the
  * template, so switching tabs or the host remounting a card never reopens one,
@@ -191,6 +198,40 @@ const PHONES: DashboardTemplateWidget[] = [
   },
 ];
 
+const RECORDS: DashboardTemplateWidget[] = [
+  {
+    id: 'live-ops-records-now',
+    title: 'Since this page opened',
+    size: 'full',
+    height: 2,
+    refreshPolicy: 'realtime',
+    leaves: [
+      leaf('live-ops-records', 'Calls ended', RecordsStat),
+      leaf('live-ops-record-updates', 'Record updates', RecordUpdatesStat),
+      leaf('live-ops-dispositioned', 'Dispositioned', DispositionedStat),
+    ],
+  },
+  {
+    id: 'live-ops-records-table',
+    title: 'Finished calls',
+    description:
+      'cdrs.onDomain — domain admins only. Each row is the latest version of its record.',
+    size: 'full',
+    height: 6,
+    refreshPolicy: 'realtime',
+    component: CallRecordsCard,
+  },
+  {
+    id: 'live-ops-record-deliveries',
+    title: 'Deliveries',
+    description: 'Every completed and updated event, newest first',
+    size: 'full',
+    height: 5,
+    refreshPolicy: 'realtime',
+    component: RecordDeliveriesCard,
+  },
+];
+
 const TABS = [
   {
     value: 'overview',
@@ -215,6 +256,12 @@ const TABS = [
     label: 'Phones',
     icon: 'mdi:phone-classic',
     widgets: PHONES,
+  },
+  {
+    value: 'records',
+    label: 'Call records',
+    icon: 'mdi:phone-log',
+    widgets: RECORDS,
   },
 ];
 
@@ -247,7 +294,7 @@ export default function LiveOperationsPage({
         <QueuePickContext.Provider value={setQueue}>
           <DashboardTemplate
             title='Live Operations'
-            subtitle='Queues, agents, calls, people and phones — pushed by sdk.streams, no polling.'
+            subtitle='Queues, agents, calls, call records, people and phones — pushed by sdk.streams, no polling.'
             actions={
               <Tabs
                 variant='pill'

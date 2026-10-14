@@ -52,7 +52,7 @@ a backend.
 | ------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Horizon SDK Demo   | Apps                           | The overview/walkthrough page (`pages/DemoPage.tsx`).                                                                                                                                                                                                                                                                     |
 | Component Showcase | Apps                           | Reference for every shared MUI Aurora component (`pages/ComponentShowcasePage.tsx`).                                                                                                                                                                                                                                      |
-| Live Operations    | Apps                           | **The `sdk.streams` example.** A live wallboard of queues, agents, domain calls and presence, each card showing its stream's status — including the host's refusal for users whose scope does not allow a feed (`pages/LiveOperationsPage.tsx`).                                                                          |
+| Live Operations    | Apps                           | **The `sdk.streams` example.** A live wallboard of queues, agents, domain calls, call records, presence and phones, each card showing its stream's status — including the host's refusal for users whose scope does not allow a feed (`pages/LiveOperationsPage.tsx`).                                                    |
 | CRM Integration    | Manage (after _Call Logs_)     | Lists the user's calls from a **live** NetSapiens v2 API call, matched to their CRM record — registered into the Manage menu to show the Manage tree can be extended, not just Apps (`pages/CrmIntegrationPage.tsx`).                                                                                                     |
 | CRM Sync           | Manage, **inside a domain**    | **Domain-scoped.** Registered once at `/manage/:domain`, so it mounts under whichever domain an admin has drilled into and reads that domain with `useManagingDomain()` — one registration, every domain (`pages/DomainCrmSyncPage.tsx`).                                                                                 |
 | Call Recordings    | My Account (after _Call Logs_) | **The reference list page.** Everything — search, filter, columns, export, refresh, checkbox selection, master-detail and the pagination footer — comes from `DatagridTemplate`; the primary action sits in `PageTemplate`'s header `actions`. Shows the /home tree can be extended too (`pages/CallRecordingsPage.tsx`). |
@@ -357,7 +357,7 @@ _is_ the subscription, and every method returns a handle with `status`,
 `onStatus()` and `unsubscribe()`.
 
 **Live Operations** (`/apps/live-operations`, `pages/LiveOperationsPage.tsx`) is
-the worked example — a wallboard of four feeds, each opened with `useStream`:
+the worked example — a tabbed wallboard of eight feeds, each opened with `useStream`:
 
 ```tsx
 const status = useStream(
@@ -367,24 +367,33 @@ const status = useStream(
 );
 ```
 
-| Card       | Call                                                                | Grant          |
-| ---------- | ------------------------------------------------------------------- | -------------- |
-| Queues     | `queues.onDomainQueues({ stats })`                                  | `queues`       |
-| Agents     | `queues.onDomainQueues({ agentUpdated, agentAdded, agentRemoved })` | `queues`       |
-| Live calls | `calls.onDomainCalls({ updated, ended })`                           | `calls.domain` |
-| Presence   | `presence.onDomain(update)`                                         | `presence`     |
+| Card                | Call                                                                | Grant                |
+| ------------------- | ------------------------------------------------------------------- | -------------------- |
+| Queues              | `queues.onDomainQueues({ stats })`                                  | `queues`             |
+| Agents              | `queues.onDomainQueues({ agentUpdated, agentAdded, agentRemoved })` | `queues`             |
+| Live calls          | `calls.onDomainCalls({ updated, ended })`                           | `calls.domain`       |
+| Presence            | `presence.onDomain(update)`                                         | `presence`           |
+| Phones              | `devices.onDomain(update)`                                          | `devices`            |
+| Notifications       | `notifications.onNotification(update)`                              | `notifications.read` |
+| User record changes | `subscribers.onDomain(update)`                                      | `subscribers`        |
+| Call records        | `cdrs.onDomain({ completed, updated })`                             | `cdrs`               |
 
 What the page is there to show:
 
 - **Status is part of the UI.** Each card prints its stream's status. A `refused`
   stream carries a `message` the host wrote for the user — the domain-calls card
   is refused for anyone below Office Manager, and says so instead of sitting empty.
+- **Records change after the call.** A call record arrives on `completed` when
+  the call ends, then again on `updated` as its recording, call quality (MOS),
+  summary and disposition land. The Call records tab keeps the latest version
+  of each record and lists every delivery with the fields that changed.
 - **`live.snapshot`** says whether the host replayed what it already held. When
   it is `false` the card fills as things change; seed from the API if you need
   history.
 - **Nothing names a permission.** The platform reads these calls out of the
   bundle when a version is submitted and derives the grants (`queues`,
-  `calls.domain`, `presence`, `softphone`); the host checks them, and the
+  `calls.domain`, `presence`, `devices`, `notifications.read`, `subscribers`,
+  `cdrs`, `softphone`); the host checks them, and the
   operator can switch any grant off platform-wide in SDK Settings.
 
 The app's own softphone feeds the CRM enrichment: `App.tsx` subscribes to
